@@ -12,14 +12,14 @@ Full documentation for each deployment method is in its respective folder (`dock
 
 ### Docker Compose — [`docker-compose/`](./docker-compose/)
 
-Runs the full Git AI stack on a single machine using Docker Compose. Intended for teams that want a straightforward, low-ops deployment without a Kubernetes cluster.
+> **For quick local testing only.** The Docker Compose setup is intended for getting Git AI running locally or for very small proof-of-concept evaluations. We do not recommend it for anything beyond that — use the Helm chart for real deployments.
+
+Runs the full Git AI stack on a single machine using Docker Compose.
 
 - PostgreSQL, Valkey (Redis-compatible), and ClickHouse included
 - Local storage and local batch processing by default — no cloud dependencies required
 - Optional cloud storage backends (S3, Azure Blob, GCS)
 - One-command bootstrap: `task bootstrap`
-
-Best for: single-server deployments, internal tooling environments, or getting up and running quickly.
 
 **[Quick start →](./docker-compose/README.md)**
 
@@ -30,7 +30,7 @@ Best for: single-server deployments, internal tooling environments, or getting u
 Deploys Git AI to a Kubernetes cluster via a Helm chart. Supports cloud-native storage, multiple ingress controllers, and per-cloud provider value overlays.
 
 - Bitnami PostgreSQL and Valkey included as Helm dependencies
-- ClickHouse StatefulSet included
+- ClickHouse StatefulSet included (simplified single-node for POCs — for production deployments, we recommend running a dedicated ClickHouse cluster or connecting to [ClickHouse Cloud](https://clickhouse.com/cloud))
 - Storage backends: local PVC, S3, Azure Blob, GCS
 - Ingress modes: nginx, Istio
 - Pre-built overlays for EKS, GKE, AKS, Istio, and Minikube
