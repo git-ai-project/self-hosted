@@ -1,0 +1,162 @@
+{{- $backend := include "gitai.storageBackend" . -}}
+{{- $emailProvider := include "gitai.emailProvider" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gitai.fullname" . }}-worker
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  replicas: {{ .Values.worker.replicas }}
+  selector:
+    matchLabels:
+      {{- include "gitai.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "gitai.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+      {{- with .Values.worker.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.image.pullSecrets | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: worker
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "gitai.configMapName" . }}
+          env:
+            - name: BULLMQ_WORKER
+              value: "true"
+            - name: BULLMQ_DASHBOARD_ENABLED
+              value: {{ ternary "true" "false" .Values.worker.dashboard.enabled | quote }}
+            - name: BULLMQ_DASHBOARD_PORT
+              value: {{ .Values.worker.dashboard.port | quote }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: REDIS_URL
+            - name: BETTER_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: BETTER_AUTH_SECRET
+            - name: SCM_APPS_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: SCM_APPS_CONFIG
+            - name: WORKER_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: WORKER_JWT_SECRET
+            - name: WEB_INTERNAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: WEB_INTERNAL_API_KEY
+            - name: SCM_WEBHOOK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: SCM_WEBHOOK_SECRET_KEY
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: CLICKHOUSE_PASSWORD
+            {{- if eq $emailProvider "resend" }}
+            - name: RESEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: RESEND_API_KEY
+            {{- end }}
+            {{- if and (eq $emailProvider "smtp") .Values.email.smtp.username }}
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: SMTP_PASSWORD
+            {{- end }}
+            - name: LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: LICENSE_KEY
+            {{- if eq $backend "azure" }}
+            - name: AZURE_STORAGE_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: {{ .Values.storage.azure.connectionStringSecretKey }}
+            {{- end }}
+          {{- if .Values.worker.dashboard.enabled }}
+          ports:
+            - name: dashboard
+              containerPort: {{ .Values.worker.dashboard.port }}
+          {{- end }}
+          livenessProbe:
+            exec:
+              command:
+                - node
+                - -e
+                - process.exit(0)
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 5
+          startupProbe:
+            exec:
+              command:
+                - node
+                - -e
+                - process.exit(0)
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+          volumeMounts:
+            - name: app-storage
+              mountPath: /app/data
+              subPath: data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: app-storage
+          {{- if and (eq $backend "local") .Values.storage.local.pvc.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "gitai.storagePvcName" . }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.worker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.worker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.worker.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

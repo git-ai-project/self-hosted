@@ -1,0 +1,18 @@
+{{- if .Values.worker.dashboard.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "gitai.fullname" . }}-worker-dashboard
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "gitai.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+  ports:
+    - name: dashboard
+      port: {{ .Values.worker.dashboard.port }}
+      targetPort: dashboard
+{{- end }}

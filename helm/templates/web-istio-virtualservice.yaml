@@ -1,0 +1,48 @@
+{{- if and .Values.ingress.enabled (eq (include "gitai.ingressMode" .) "istio") }}
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ include "gitai.fullname" . }}-web
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+    {{- with .Values.ingress.istio.virtualService.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.ingress.istio.virtualService.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  hosts:
+    {{- range .Values.ingress.hosts }}
+    - {{ .host | quote }}
+    {{- end }}
+  gateways:
+    {{- if .Values.ingress.istio.virtualService.gateways }}
+    {{- range .Values.ingress.istio.virtualService.gateways }}
+    - {{ . | quote }}
+    {{- end }}
+    {{- else }}
+    - {{ include "gitai.istioGatewayRef" . | quote }}
+    {{- end }}
+  http:
+    {{- range $host := .Values.ingress.hosts }}
+    {{- range $path := $host.paths }}
+    - match:
+        - authority:
+            exact: {{ $host.host | quote }}
+          uri:
+            {{- if eq (default "Prefix" $path.pathType) "Exact" }}
+            exact: {{ $path.path | quote }}
+            {{- else }}
+            prefix: {{ $path.path | quote }}
+            {{- end }}
+      route:
+        - destination:
+            host: {{ include "gitai.fullname" $ }}-web
+            port:
+              number: {{ $.Values.web.service.port }}
+    {{- end }}
+    {{- end }}
+{{- end }}

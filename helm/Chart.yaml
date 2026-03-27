@@ -1,0 +1,20 @@
+apiVersion: v2
+name: git-ai-self-hosting
+description: Full-stack Git AI self-hosting POC for Kubernetes
+version: 0.2.0
+appVersion: "75c12d8"
+type: application
+keywords:
+  - git-ai
+  - self-hosting
+  - kubernetes
+  - helm
+dependencies:
+  - name: postgresql
+    version: 18.5.6
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: valkey
+    version: 5.4.3
+    repository: https://charts.bitnami.com/bitnami
+    condition: valkey.enabled

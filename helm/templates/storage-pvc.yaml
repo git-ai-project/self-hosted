@@ -1,0 +1,18 @@
+{{- $backend := include "gitai.storageBackend" . -}}
+{{- if and (eq $backend "local") .Values.storage.local.pvc.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "gitai.storagePvcName" . }}
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    {{- toYaml .Values.storage.local.pvc.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.local.pvc.size }}
+  {{- if .Values.storage.local.pvc.storageClass }}
+  storageClassName: {{ .Values.storage.local.pvc.storageClass | quote }}
+  {{- end }}
+{{- end }}

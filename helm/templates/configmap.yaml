@@ -1,0 +1,50 @@
+{{- $backend := include "gitai.storageBackend" . -}}
+{{- $emailProvider := include "gitai.emailProvider" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "gitai.configMapName" . }}
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  WEB_BASE_URL: {{ .Values.global.webBaseUrl | quote }}
+  BETTER_AUTH_URL: {{ .Values.global.betterAuthUrl | quote }}
+  WORKER_PUBLIC_BASE_URL: {{ .Values.global.workerPublicBaseUrl | quote }}
+  WEB_APP_INTERNAL_BASE_URL: {{ .Values.global.webAppInternalBaseUrl | quote }}
+  BULLMQ_PREFIX: {{ .Values.app.bullmqPrefix | quote }}
+  STORAGE_BACKEND: {{ $backend | quote }}
+  ANALYZE_BATCH_PROVIDER: {{ .Values.app.analyzeBatchProvider | quote }}
+  SKIP_GITLAB_WEBHOOK_SETUP: {{ ternary "true" "false" .Values.app.skipGitLabWebhookSetup | quote }}
+  CLICKHOUSE_HTTP_URL: {{ printf "http://%s:%v" (include "gitai.clickhouseServiceName" .) .Values.clickhouse.service.httpPort | quote }}
+  CLICKHOUSE_USER: {{ .Values.clickhouse.auth.user | quote }}
+  CLICKHOUSE_DATABASE: {{ .Values.clickhouse.auth.database | quote }}
+  GIT_AUTHOR_NAME: "Git AI Bot"
+  GIT_AUTHOR_EMAIL: "bot@usegitai.com"
+  GIT_COMMITTER_NAME: "Git AI Bot"
+  GIT_COMMITTER_EMAIL: "bot@usegitai.com"
+  EMAIL_PROVIDER: {{ $emailProvider | quote }}
+  EMAIL_FROM: {{ .Values.email.from | quote }}
+  SMTP_HOST: {{ .Values.email.smtp.host | quote }}
+  SMTP_PORT: {{ .Values.email.smtp.port | quote }}
+  SMTP_USERNAME: {{ .Values.email.smtp.username | quote }}
+  SMTP_SECURE: {{ ternary "true" "false" .Values.email.smtp.secure | quote }}
+  SMTP_REQUIRE_TLS: {{ ternary "true" "false" .Values.email.smtp.requireTls | quote }}
+  SMTP_TLS_REJECT_UNAUTHORIZED: {{ ternary "true" "false" .Values.email.smtp.tlsRejectUnauthorized | quote }}
+  {{- if .Values.app.prCommentOrgs }}
+  PR_COMMENT_ORGS: {{ .Values.app.prCommentOrgs | quote }}
+  {{- end }}
+  {{- if eq $backend "local" }}
+  LOCAL_STORAGE_PATH: {{ .Values.storage.local.path | quote }}
+  {{- end }}
+  {{- if eq $backend "aws" }}
+  WORKER_STORAGE_BUCKET_NAME: {{ .Values.storage.aws.workerBucketName | quote }}
+  {{- end }}
+  {{- if eq $backend "gcp" }}
+  GCP_STORAGE_BUCKET: {{ .Values.storage.gcp.bucketName | quote }}
+  WORKER_STORAGE_BUCKET_NAME: {{ .Values.storage.gcp.bucketName | quote }}
+  {{- end }}
+  {{- if eq $backend "azure" }}
+  AZURE_STORAGE_CONTAINER: {{ .Values.storage.azure.container | quote }}
+  {{- end }}

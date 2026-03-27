@@ -1,0 +1,68 @@
+version: "3"
+
+tasks:
+  init:
+    desc: Create .env, generate baseline secrets, and scaffold generated files
+    cmds:
+      - ./scripts/init-env.sh
+
+  scm:configure:
+    desc: Interactive SCM wizard (must configure at least one provider)
+    cmds:
+      - node ./scripts/configure-scm.mjs
+
+  doctor:
+    desc: Validate env, SCM config, and compose config
+    cmds:
+      - ./scripts/doctor.sh
+
+  migrate:
+    desc: Run one-shot migrations for Postgres and ClickHouse
+    cmds:
+      - docker compose run --rm migrator-postgres
+      - docker compose run --rm migrator-clickhouse
+
+  up:
+    desc: Start the self-hosted stack (includes one-shot migrators)
+    cmds:
+      - docker compose up -d
+
+  wait:
+    desc: Wait until migrators complete and app services are ready
+    cmds:
+      - ./scripts/wait-ready.sh
+
+  down:
+    desc: Stop the self-hosted stack
+    cmds:
+      - docker compose down
+
+  status:
+    desc: Show service status and health
+    cmds:
+      - docker compose ps
+
+  logs:
+    desc: Tail logs (optionally pass a service name)
+    cmds:
+      - ./scripts/logs.sh {{.CLI_ARGS}}
+
+  bootstrap:
+    desc: End-to-end first-time setup
+    cmds:
+      - task: init
+      - task: scm:configure
+      - task: up
+      - task: wait
+      - task: doctor
+      - task: status
+
+  admin:grant:
+    desc: "Promote a user to admin by email or id (usage: task admin:grant -- user@example.com)"
+    cmds:
+      - ./scripts/grant-admin.sh {{.CLI_ARGS}}
+
+  admin:psql:
+    desc: Open a psql shell inside the Postgres container
+    cmds:
+      - ./scripts/psql.sh

@@ -1,0 +1,136 @@
+services:
+  db:
+    image: postgres:18.1
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: valkey/valkey:7.2-alpine
+    command: ["valkey-server", "--maxmemory-policy", "noeviction"]
+    restart: unless-stopped
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8.9.20
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      CLICKHOUSE_DB: ${CLICKHOUSE_DATABASE}
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  migrator-postgres:
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:58132b5}
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./.env
+    command:
+      - sh
+      - -lc
+      - |
+        set -eu
+        node /app/scripts/migrate-postgres.mjs
+
+  migrator-clickhouse:
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:58132b5}
+    restart: "no"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    env_file:
+      - ./.env
+    environment:
+      CLICKHOUSE_HOST: clickhouse
+      CLICKHOUSE_PORT: 9000
+    command: ["sh", "/app/scripts/migrate-clickhouse.sh"]
+
+  web:
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:58132b5}
+    restart: unless-stopped
+    env_file:
+      - ./.env
+      - ./generated/scm.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      migrator-postgres:
+        condition: service_completed_successfully
+      migrator-clickhouse:
+        condition: service_completed_successfully
+    ports:
+      - "3000:3000"
+    volumes:
+      - worker_storage_data:/app/data
+      - bundles_data:/app/.bundles
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://localhost:3000/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+  worker:
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:58132b5}
+    restart: unless-stopped
+    env_file:
+      - ./.env
+      - ./generated/scm.env
+    environment:
+      BULLMQ_WORKER: "true"
+      BULLMQ_DASHBOARD_ENABLED: ${BULLMQ_DASHBOARD_ENABLED:-true}
+      BULLMQ_DASHBOARD_PORT: ${BULLMQ_DASHBOARD_PORT:-3001}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      migrator-postgres:
+        condition: service_completed_successfully
+      migrator-clickhouse:
+        condition: service_completed_successfully
+    ports:
+      - "${BULLMQ_DASHBOARD_PORT:-3001}:${BULLMQ_DASHBOARD_PORT:-3001}"
+    volumes:
+      - worker_storage_data:/app/data
+      - bundles_data:/app/.bundles
+
+volumes:
+  postgres_data:
+  valkey_data:
+  clickhouse_data:
+  worker_storage_data:
+  bundles_data:

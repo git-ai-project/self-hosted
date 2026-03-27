@@ -1,0 +1,188 @@
+image:
+  repository: ghcr.io/git-ai-project/git-ai-web-ee
+  tag: "58132b5"
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+global:
+  webBaseUrl: http://localhost:3000
+  betterAuthUrl: http://localhost:3000
+  workerPublicBaseUrl: http://localhost:3000
+  webAppInternalBaseUrl: http://localhost:3000
+
+secrets:
+  existingSecret: ""
+  betterAuthSecret: REPLACE_ME_BETTER_AUTH_SECRET
+  workerJwtSecret: REPLACE_ME_WORKER_JWT_SECRET
+  webInternalApiKey: REPLACE_ME_WEB_INTERNAL_API_KEY
+  scmWebhookSecretKey: REPLACE_ME_SCM_WEBHOOK_SECRET_KEY
+  licenseKey: REPLACE_ME_LICENSE_KEY
+  # Deprecated: use email.resend.apiKey
+  resendApiKey: ""
+  scmAppsConfigJson: "[]"
+
+email:
+  provider: disabled
+  from: notifications@example.com
+  resend:
+    apiKey: ""
+  smtp:
+    host: ""
+    port: 587
+    username: ""
+    password: ""
+    secure: false
+    requireTls: true
+    tlsRejectUnauthorized: true
+
+storage:
+  backend: local
+  local:
+    path: /app/data/worker-storage
+    pvc:
+      enabled: true
+      size: 20Gi
+      storageClass: ""
+      accessModes:
+        - ReadWriteOnce
+  aws:
+    workerBucketName: ""
+  azure:
+    connectionStringSecretKey: AZURE_STORAGE_CONNECTION_STRING
+    connectionString: ""
+    container: git-ai-worker-storage
+  gcp:
+    bucketName: ""
+
+app:
+  analyzeBatchProvider: local
+  bullmqPrefix: "{git-ai}"
+  skipGitLabWebhookSetup: false
+  prCommentOrgs: ""
+
+postgresql:
+  enabled: true
+  auth:
+    username: gitai
+    password: REPLACE_ME_POSTGRES_PASSWORD
+    database: gitai
+    postgresPassword: REPLACE_ME_POSTGRES_ADMIN_PASSWORD
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: ""
+
+valkey:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: true
+    password: REPLACE_ME_VALKEY_PASSWORD
+  primary:
+    extraFlags:
+      - "--maxmemory-policy noeviction"
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: ""
+
+clickhouse:
+  enabled: true
+  image:
+    repository: clickhouse/clickhouse-server
+    tag: 25.8.9.20
+    pullPolicy: IfNotPresent
+  auth:
+    user: gitai
+    password: REPLACE_ME_CLICKHOUSE_PASSWORD
+    database: default
+  service:
+    httpPort: 8123
+    nativePort: 9000
+  persistence:
+    enabled: true
+    size: 30Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "2"
+      memory: 4Gi
+
+migrations:
+  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  hookDeletePolicy: before-hook-creation
+  backoffLimit: 1
+
+web:
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 3000
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+worker:
+  replicas: 1
+  dashboard:
+    enabled: true
+    port: 3001
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+ingress:
+  enabled: false
+  mode: nginx
+  cloud: generic
+  className: ""
+  annotations: {}
+  hosts:
+    - host: localhost
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  istio:
+    gateway:
+      create: true
+      name: ""
+      namespace: ""
+      selector:
+        istio: ingressgateway
+      annotations: {}
+      labels: {}
+      redirectHttpToHttps: true
+    virtualService:
+      gateways: []
+      annotations: {}
+      labels: {}

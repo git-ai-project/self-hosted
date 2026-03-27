@@ -1,0 +1,157 @@
+{{- $backend := include "gitai.storageBackend" . -}}
+{{- $emailProvider := include "gitai.emailProvider" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gitai.fullname" . }}-web
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  replicas: {{ .Values.web.replicas }}
+  selector:
+    matchLabels:
+      {{- include "gitai.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: web
+  template:
+    metadata:
+      labels:
+        {{- include "gitai.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: web
+      {{- with .Values.web.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.image.pullSecrets | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: {{ include "gitai.configMapName" . }}
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: REDIS_URL
+            - name: BETTER_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: BETTER_AUTH_SECRET
+            - name: SCM_APPS_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: SCM_APPS_CONFIG
+            - name: WORKER_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: WORKER_JWT_SECRET
+            - name: WEB_INTERNAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: WEB_INTERNAL_API_KEY
+            - name: SCM_WEBHOOK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: SCM_WEBHOOK_SECRET_KEY
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: CLICKHOUSE_PASSWORD
+            {{- if eq $emailProvider "resend" }}
+            - name: RESEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: RESEND_API_KEY
+            {{- end }}
+            {{- if and (eq $emailProvider "smtp") .Values.email.smtp.username }}
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: SMTP_PASSWORD
+            {{- end }}
+            - name: LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: LICENSE_KEY
+            {{- if eq $backend "azure" }}
+            - name: AZURE_STORAGE_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: {{ .Values.storage.azure.connectionStringSecretKey }}
+            {{- end }}
+          volumeMounts:
+            - name: app-storage
+              mountPath: /app/data
+              subPath: data
+            - name: tmp
+              mountPath: /tmp
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 30
+          resources:
+            {{- toYaml .Values.web.resources | nindent 12 }}
+      volumes:
+        - name: app-storage
+          {{- if and (eq $backend "local") .Values.storage.local.pvc.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "gitai.storagePvcName" . }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.web.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.web.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.web.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

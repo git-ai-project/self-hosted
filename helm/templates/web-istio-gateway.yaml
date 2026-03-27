@@ -1,0 +1,52 @@
+{{- if and .Values.ingress.enabled (eq (include "gitai.ingressMode" .) "istio") .Values.ingress.istio.gateway.create }}
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "gitai.istioGatewayName" . }}
+  namespace: {{ include "gitai.istioGatewayNamespace" . }}
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+    {{- with .Values.ingress.istio.gateway.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.ingress.istio.gateway.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    {{- toYaml .Values.ingress.istio.gateway.selector | nindent 4 }}
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        {{- range .Values.ingress.hosts }}
+        - {{ .host | quote }}
+        {{- end }}
+      {{- if and .Values.ingress.tls .Values.ingress.istio.gateway.redirectHttpToHttps }}
+      tls:
+        httpsRedirect: true
+      {{- end }}
+    {{- range $index, $tls := .Values.ingress.tls }}
+    - port:
+        number: 443
+        name: https-{{ $index }}
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: {{ $tls.secretName | quote }}
+      hosts:
+        {{- if $tls.hosts }}
+        {{- range $tls.hosts }}
+        - {{ . | quote }}
+        {{- end }}
+        {{- else }}
+        {{- range $.Values.ingress.hosts }}
+        - {{ .host | quote }}
+        {{- end }}
+        {{- end }}
+    {{- end }}
+{{- end }}

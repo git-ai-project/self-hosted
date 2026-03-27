@@ -1,0 +1,5 @@
+ingress:
+  enabled: true
+  mode: istio
+  cloud: generic
+

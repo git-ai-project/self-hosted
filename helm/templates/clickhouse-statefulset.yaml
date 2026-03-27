@@ -1,0 +1,83 @@
+{{- if .Values.clickhouse.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "gitai.clickhouseServiceName" . }}
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+spec:
+  serviceName: {{ include "gitai.clickhouseHeadlessServiceName" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "gitai.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: clickhouse
+  template:
+    metadata:
+      labels:
+        {{- include "gitai.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: clickhouse
+    spec:
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.image.pullSecrets | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: clickhouse
+          image: "{{ .Values.clickhouse.image.repository }}:{{ .Values.clickhouse.image.tag }}"
+          imagePullPolicy: {{ .Values.clickhouse.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.clickhouse.service.httpPort }}
+            - name: native
+              containerPort: {{ .Values.clickhouse.service.nativePort }}
+          env:
+            - name: CLICKHOUSE_USER
+              value: {{ .Values.clickhouse.auth.user | quote }}
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: CLICKHOUSE_PASSWORD
+            - name: CLICKHOUSE_DB
+              value: {{ .Values.clickhouse.auth.database | quote }}
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+          resources:
+            {{- toYaml .Values.clickhouse.resources | nindent 12 }}
+          volumeMounts:
+            - name: clickhouse-data
+              mountPath: /var/lib/clickhouse
+      {{- if not .Values.clickhouse.persistence.enabled }}
+      volumes:
+        - name: clickhouse-data
+          emptyDir: {}
+      {{- end }}
+  {{- if .Values.clickhouse.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: clickhouse-data
+      spec:
+        accessModes:
+          {{- toYaml .Values.clickhouse.persistence.accessModes | nindent 10 }}
+        resources:
+          requests:
+            storage: {{ .Values.clickhouse.persistence.size }}
+        {{- if .Values.clickhouse.persistence.storageClass }}
+        storageClassName: {{ .Values.clickhouse.persistence.storageClass | quote }}
+        {{- end }}
+  {{- end }}
+{{- end }}

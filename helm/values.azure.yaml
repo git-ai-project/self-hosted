@@ -1,0 +1,5 @@
+ingress:
+  enabled: true
+  mode: nginx
+  cloud: azure
+  className: ""

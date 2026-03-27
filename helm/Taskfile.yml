@@ -1,0 +1,105 @@
+version: "3"
+
+tasks:
+  init:
+    desc: Generate local values and placeholder SCM config
+    cmds:
+      - ./scripts/init-values.sh
+
+  deps:
+    desc: Download/update Helm chart dependencies
+    cmds:
+      - helm dependency update .
+
+  scm:configure:
+    desc: Interactive SCM app config wizard
+    cmds:
+      - node ./scripts/configure-scm.mjs
+
+  lint:
+    desc: Lint chart with base and local values
+    cmds:
+      - |
+        HELM_VALUES_FILE="${HELM_VALUES_FILE:-generated/values.local.yaml}"
+        SCM_APPS_FILE="${SCM_APPS_FILE:-generated/scm-apps.generated.json}"
+        helm dependency update .
+        helm lint . -f values.yaml -f "$HELM_VALUES_FILE" --set-file secrets.scmAppsConfigJson="$SCM_APPS_FILE"
+
+  render:
+    desc: Render chart manifests locally
+    cmds:
+      - |
+        HELM_RELEASE="${HELM_RELEASE:-git-ai-self-hosting}"
+        HELM_NAMESPACE="${HELM_NAMESPACE:-git-ai}"
+        HELM_VALUES_FILE="${HELM_VALUES_FILE:-generated/values.local.yaml}"
+        SCM_APPS_FILE="${SCM_APPS_FILE:-generated/scm-apps.generated.json}"
+        helm dependency update .
+        helm template "$HELM_RELEASE" . \
+          --namespace "$HELM_NAMESPACE" \
+          -f values.yaml \
+          -f "$HELM_VALUES_FILE" \
+          --set-file secrets.scmAppsConfigJson="$SCM_APPS_FILE" {{.CLI_ARGS}}
+
+  test:render:
+    desc: Run backend render tests (local/aws/azure/gcp)
+    cmds:
+      - ./scripts/test-render.sh
+
+  doctor:
+    desc: Validate chart config and render rules
+    cmds:
+      - ./scripts/doctor.sh
+
+  up:
+    desc: Install/upgrade the full stack and wait for hooks
+    cmds:
+      - |
+        HELM_RELEASE="${HELM_RELEASE:-git-ai-self-hosting}"
+        HELM_NAMESPACE="${HELM_NAMESPACE:-git-ai}"
+        HELM_VALUES_FILE="${HELM_VALUES_FILE:-generated/values.local.yaml}"
+        SCM_APPS_FILE="${SCM_APPS_FILE:-generated/scm-apps.generated.json}"
+        helm dependency update .
+        helm upgrade --install "$HELM_RELEASE" . \
+          --namespace "$HELM_NAMESPACE" \
+          --create-namespace \
+          -f values.yaml \
+          -f "$HELM_VALUES_FILE" \
+          --set-file secrets.scmAppsConfigJson="$SCM_APPS_FILE" \
+          --wait \
+          --wait-for-jobs \
+          {{.CLI_ARGS}}
+
+  wait:
+    desc: Wait for workloads and migration jobs readiness
+    cmds:
+      - ./scripts/wait-ready.sh
+
+  status:
+    desc: Show pods/services/jobs for the release namespace
+    cmds:
+      - |
+        HELM_NAMESPACE="${HELM_NAMESPACE:-git-ai}"
+        kubectl get pods,svc,job -n "$HELM_NAMESPACE"
+
+  logs:
+    desc: View logs by target (web|worker|clickhouse|migrator-postgres|migrator-clickhouse|postgres|valkey)
+    cmds:
+      - ./scripts/logs.sh {{.CLI_ARGS}}
+
+  down:
+    desc: Uninstall release
+    cmds:
+      - |
+        HELM_RELEASE="${HELM_RELEASE:-git-ai-self-hosting}"
+        HELM_NAMESPACE="${HELM_NAMESPACE:-git-ai}"
+        helm uninstall "$HELM_RELEASE" -n "$HELM_NAMESPACE"
+
+  admin:grant:
+    desc: "Promote a user to admin (usage: task admin:grant -- user@example.com)"
+    cmds:
+      - ./scripts/grant-admin.sh {{.CLI_ARGS}}
+
+  admin:psql:
+    desc: Open psql shell in PostgreSQL pod
+    cmds:
+      - ./scripts/psql.sh

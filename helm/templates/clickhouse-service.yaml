@@ -1,0 +1,41 @@
+{{- if .Values.clickhouse.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "gitai.clickhouseServiceName" . }}
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "gitai.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+  ports:
+    - name: http
+      port: {{ .Values.clickhouse.service.httpPort }}
+      targetPort: http
+    - name: native
+      port: {{ .Values.clickhouse.service.nativePort }}
+      targetPort: native
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "gitai.clickhouseHeadlessServiceName" . }}
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+spec:
+  clusterIP: None
+  selector:
+    {{- include "gitai.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+  ports:
+    - name: http
+      port: {{ .Values.clickhouse.service.httpPort }}
+      targetPort: http
+    - name: native
+      port: {{ .Values.clickhouse.service.nativePort }}
+      targetPort: native
+{{- end }}

@@ -1,0 +1,30 @@
+[
+  {
+    "provider": "github",
+    "domain": "github.com",
+    "slug": "github",
+    "app_id": "YOUR_GITHUB_APP_ID",
+    "webhook_secret": "YOUR_GITHUB_WEBHOOK_SECRET",
+    "client_id": "YOUR_GITHUB_CLIENT_ID",
+    "client_secret": "YOUR_GITHUB_CLIENT_SECRET",
+    "private_key": "-----BEGIN RSA PRIVATE KEY-----\\n...\\n-----END RSA PRIVATE KEY-----\\n"
+  },
+  {
+    "provider": "gitlab",
+    "domain": "gitlab.com",
+    "slug": "gitlab",
+    "app_id": "gitlab",
+    "webhook_secret": "YOUR_GITLAB_WEBHOOK_SECRET",
+    "client_id": "YOUR_GITLAB_CLIENT_ID",
+    "client_secret": "YOUR_GITLAB_CLIENT_SECRET"
+  },
+  {
+    "provider": "bitbucket",
+    "domain": "bitbucket.org",
+    "slug": "bitbucket",
+    "app_id": "bitbucket",
+    "webhook_secret": "YOUR_BITBUCKET_WEBHOOK_SECRET",
+    "client_id": "YOUR_BITBUCKET_CLIENT_ID",
+    "client_secret": "YOUR_BITBUCKET_CLIENT_SECRET"
+  }
+]

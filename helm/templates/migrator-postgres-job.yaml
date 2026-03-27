@@ -1,0 +1,46 @@
+{{- if .Values.migrations.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "gitai.fullname" . }}-migrator-postgres
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrator
+    app.kubernetes.io/part: postgres
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "-10"
+    helm.sh/hook-delete-policy: {{ .Values.migrations.hookDeletePolicy | quote }}
+spec:
+  backoffLimit: {{ .Values.migrations.backoffLimit }}
+  template:
+    metadata:
+      labels:
+        {{- include "gitai.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migrator
+        app.kubernetes.io/part: postgres
+    spec:
+      restartPolicy: Never
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml .Values.image.pullSecrets | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: migrator-postgres
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - sh
+            - -lc
+            - |
+              set -eu
+              node /app/scripts/migrate-postgres.mjs
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gitai.secretName" . }}
+                  key: DATABASE_URL
+          resources:
+            {{- toYaml .Values.migrations.resources | nindent 12 }}
+{{- end }}

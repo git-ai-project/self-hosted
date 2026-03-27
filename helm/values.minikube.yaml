@@ -1,0 +1,28 @@
+global:
+  webBaseUrl: http://git-ai.local
+  betterAuthUrl: http://git-ai.local
+  workerPublicBaseUrl: http://git-ai.local
+  webAppInternalBaseUrl: http://git-ai.local
+
+ingress:
+  enabled: true
+  mode: nginx
+  cloud: generic
+  className: nginx
+  hosts:
+    - host: git-ai.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+web:
+  replicas: 1
+
+worker:
+  replicas: 1
+  dashboard:
+    enabled: true
+
+migrations:
+  image:
+    pullPolicy: IfNotPresent
