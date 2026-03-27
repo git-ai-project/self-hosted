@@ -19,7 +19,6 @@ Runs the full Git AI stack on a single machine using Docker Compose.
 - PostgreSQL, Valkey (Redis-compatible), and ClickHouse included
 - Local storage and local batch processing by default — no cloud dependencies required
 - Optional cloud storage backends (S3, Azure Blob, GCS)
-- One-command bootstrap: `task bootstrap`
 
 **[Quick start →](./docker-compose/README.md)**
 
