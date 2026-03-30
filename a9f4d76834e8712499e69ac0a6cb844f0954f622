@@ -1,0 +1,30 @@
+docker-compose/docs/04-scm-github.md
+  3e34e68d7d5421dc 9,11,22-26,28,30,33-41,43-48,52-74,76
+docker-compose/scripts/configure-scm.mjs
+  3e34e68d7d5421dc 220-221
+helm/scripts/configure-scm.mjs
+  3e34e68d7d5421dc 198-199
+helm/docs/04-scm-github.md
+  3e34e68d7d5421dc 9,11,22-26,28,30,33-41,43-48,52-74,76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.22",
+  "base_commit_sha": "a9f4d76834e8712499e69ac0a6cb844f0954f622",
+  "prompts": {
+    "3e34e68d7d5421dc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d3ad1-a1fe-7351-ac12-3009914021ae",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Sasha Varlamov",
+      "messages": [],
+      "total_additions": 106,
+      "total_deletions": 33,
+      "accepted_lines": 106,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/859db705c8701806be4fb975eab66e1002432e6b67ee48b6df5ec2c4b4b065eb"
+    }
+  }
+}
