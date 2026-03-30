@@ -6,8 +6,9 @@ Use this if you want GitHub support. You can skip GitHub and use GitLab/Bitbucke
 
 If `WEB_BASE_URL=https://gitai.example.com`:
 
+- Homepage URL: `https://gitai.example.com`
 - OAuth callback URL: `https://gitai.example.com/api/auth/callback/github`
-- Install callback URL: `https://gitai.example.com/api/github/install/callback`
+- Setup URL: `https://gitai.example.com/api/github/install/callback`
 - Webhook URL: `https://gitai.example.com/worker/scm-webhook/<github-slug>`
 
 Use the default slug `github` unless you run multiple GitHub instances.
@@ -18,26 +19,61 @@ Use the default slug `github` unless you run multiple GitHub instances.
 2. Set **GitHub App name** (example: `git-ai-self-hosted`).
 3. Set **Homepage URL** to `https://gitai.example.com`.
 4. Set **Callback URL** to `https://gitai.example.com/api/auth/callback/github`.
-5. Enable **Active** webhook.
-6. Set **Webhook URL** to `https://gitai.example.com/worker/scm-webhook/github` (or your custom slug if you run multiple GitHub instances).
-7. Set **Webhook secret** and keep it for the wizard.
-8. Create the app.
+5. Set **Setup URL** to `https://gitai.example.com/api/github/install/callback`.
+6. Enable **Active** webhook.
+7. Set **Webhook URL** to `https://gitai.example.com/worker/scm-webhook/github` (or your custom slug if you run multiple GitHub instances).
+8. Set **Webhook secret** and keep it for the wizard.
+9. Create the app.
 
-## GitHub App Permissions (recommended baseline)
+## GitHub App Permissions
+
+Set the GitHub App permissions to match the PDF/screenshots exactly:
 
 - Repository permissions:
-  - Contents: Read & write
-  - Pull requests: Read & write
-  - Commit statuses: Read & write
-  - Metadata: Read-only
+  - Administration: Read-only
+  - Commit statuses: Read and write
+  - Contents: Read and write
+  - Metadata: Read-only (mandatory)
+  - Pull requests: Read and write
+- Organization permissions:
+  - Members: Read-only
+- Account permissions:
+  - Email addresses: Read-only
+
+![Permissions overview](../../docs/assets/gh-app-setup-screenshots/permissions/01-permissions-overview.png)
+![Repository permissions section](../../docs/assets/gh-app-setup-screenshots/permissions/04-repository-permissions-section.png)
+![Commit statuses and contents permissions](../../docs/assets/gh-app-setup-screenshots/permissions/05-repository-commit-statuses-and-contents.png)
+![Metadata and pull requests permissions](../../docs/assets/gh-app-setup-screenshots/permissions/06-repository-metadata-and-pull-requests.png)
+![Organization members permission](../../docs/assets/gh-app-setup-screenshots/permissions/03-organization-members-read-only.png)
+![Account email addresses permission](../../docs/assets/gh-app-setup-screenshots/permissions/02-account-email-addresses-read-only.png)
 
 ## Subscribe to Events
 
-- `push`
-- `pull_request`
-- `installation`
-- `installation_repositories`
-- `repository`
+Select these webhook events:
+
+- `Create`
+- `Delete`
+- `Fork`
+- `Installation target`
+- `Member`
+- `Membership`
+- `Meta`
+- `Organization`
+- `Public`
+- `Pull request`
+- `Push`
+- `Repository`
+- `Team`
+- `Team add`
+
+![Event subscriptions overview](../../docs/assets/gh-app-setup-screenshots/events/01-event-subscriptions-overview.png)
+![Event subscriptions detail](../../docs/assets/gh-app-setup-screenshots/events/02-event-subscriptions-detail.png)
+
+## Optional Features
+
+Enable **Request user authorization (OAuth) during installation**.
+
+![Request user authorization (OAuth) during installation](../../docs/assets/gh-app-setup-screenshots/optional-features/01-request-user-authorization-oauth.png)
 
 ## Generate and Collect Credentials
 
