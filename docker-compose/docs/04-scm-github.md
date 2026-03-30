@@ -7,23 +7,27 @@ Use this if you want GitHub support. You can skip GitHub and use GitLab/Bitbucke
 If `WEB_BASE_URL=https://gitai.example.com`:
 
 - Homepage URL: `https://gitai.example.com`
-- OAuth callback URL: `https://gitai.example.com/api/auth/callback/github`
-- Setup URL: `https://gitai.example.com/api/github/install/callback`
+- Callback URL: `https://gitai.example.com/api/auth/callback/github`
 - Webhook URL: `https://gitai.example.com/worker/scm-webhook/<github-slug>`
 
 Use the default slug `github` unless you run multiple GitHub instances.
+When **Request user authorization (OAuth) during installation** is enabled, leave **Setup URL** empty. GitHub disables it and redirects users back to the **Callback URL** after installation or installation updates.
 
 ## Create GitHub App (Step by Step)
 
 1. Open [GitHub App creation](https://github.com/settings/apps/new).
 2. Set **GitHub App name** (example: `git-ai-self-hosted`).
 3. Set **Homepage URL** to `https://gitai.example.com`.
-4. Set **Callback URL** to `https://gitai.example.com/api/auth/callback/github`.
-5. Set **Setup URL** to `https://gitai.example.com/api/github/install/callback`.
-6. Enable **Active** webhook.
-7. Set **Webhook URL** to `https://gitai.example.com/worker/scm-webhook/github` (or your custom slug if you run multiple GitHub instances).
-8. Set **Webhook secret** and keep it for the wizard.
-9. Create the app.
+4. Under **Identifying and authorizing users**, set **Callback URL** to `https://gitai.example.com/api/auth/callback/github`.
+5. Enable **Request user authorization (OAuth) during installation**.
+6. Leave **Setup URL** empty. GitHub shows it as unavailable when OAuth during installation is enabled and uses the **Callback URL** for the post-install redirect.
+7. Leave **Enable Device Flow** disabled unless you explicitly need it.
+8. Enable **Active** webhook.
+9. Set **Webhook URL** to `https://gitai.example.com/worker/scm-webhook/github` (or your custom slug if you run multiple GitHub instances).
+10. Set **Webhook secret** and keep it for the wizard.
+11. Create the app.
+
+![Callback URL, OAuth during installation, and post-installation behavior](../../docs/assets/gh-app-setup-screenshots/general/01-callback-url-oauth-and-post-installation.png)
 
 ## GitHub App Permissions
 
@@ -72,6 +76,7 @@ Select these webhook events:
 ## Optional Features
 
 Enable **Request user authorization (OAuth) during installation**.
+Do not set **Setup URL** when this option is enabled.
 
 ![Request user authorization (OAuth) during installation](../../docs/assets/gh-app-setup-screenshots/optional-features/01-request-user-authorization-oauth.png)
 
