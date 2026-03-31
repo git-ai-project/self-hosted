@@ -42,7 +42,7 @@ services:
       retries: 10
 
   migrator-postgres:
-    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:58132b5}
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:816c784}
     restart: "no"
     depends_on:
       db:
@@ -57,7 +57,7 @@ services:
         node /app/scripts/migrate-postgres.mjs
 
   migrator-clickhouse:
-    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:58132b5}
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:816c784}
     restart: "no"
     depends_on:
       clickhouse:
@@ -70,7 +70,7 @@ services:
     command: ["sh", "/app/scripts/migrate-clickhouse.sh"]
 
   web:
-    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:58132b5}
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:816c784}
     restart: unless-stopped
     env_file:
       - ./.env
@@ -102,7 +102,7 @@ services:
       retries: 20
 
   worker:
-    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:58132b5}
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:816c784}
     restart: unless-stopped
     env_file:
       - ./.env
