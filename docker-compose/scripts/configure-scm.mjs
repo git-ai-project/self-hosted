@@ -218,6 +218,7 @@ async function main() {
     console.log("\nProvider setup URLs:");
     if (enableGitHub) {
       console.log(`- GitHub callback URL: ${baseUrl}/api/auth/callback/github`);
+      console.log(`- GitHub setup URL: leave blank when "Request user authorization (OAuth) during installation" is enabled`);
       const githubSlug = apps.find((a) => a.provider === "github")?.slug;
       console.log(`- GitHub webhook URL: ${baseUrl}/worker/scm-webhook/${githubSlug}`);
     }

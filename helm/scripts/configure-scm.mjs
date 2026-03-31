@@ -196,7 +196,7 @@ async function main() {
     for (const app of apps) {
       if (app.provider === "github") {
         console.log(`- GitHub callback URL: ${baseUrl}/api/auth/callback/github`);
-        console.log(`- GitHub install callback URL: ${baseUrl}/api/github/install/callback`);
+        console.log(`- GitHub setup URL: leave blank when "Request user authorization (OAuth) during installation" is enabled`);
         console.log(`- GitHub webhook URL: ${baseUrl}/worker/scm-webhook/${app.slug}`);
       }
       if (app.provider === "gitlab") {
