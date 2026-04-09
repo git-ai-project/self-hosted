@@ -1,0 +1,37 @@
+{{- if .Values.clickhouse.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "gitai.clickhouseServiceName" . }}-config
+  labels:
+    {{- include "gitai.labels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+data:
+  logging.xml: |
+    <clickhouse>
+      <!-- Disable most system logs to save storage -->
+      <query_thread_log remove="1"/>
+      <part_log remove="1"/>
+      <trace_log remove="1"/>
+      <metric_log remove="1"/>
+      <asynchronous_metric_log remove="1"/>
+      <text_log remove="1"/>
+      <session_log remove="1"/>
+      <opentelemetry_span_log remove="1"/>
+      <processors_profile_log remove="1"/>
+      <asynchronous_insert_log remove="1"/>
+
+      {{- if .Values.clickhouse.systemLogs.queryLog.enabled }}
+      <!-- Keep query_log but with short TTL -->
+      <query_log>
+        <database>system</database>
+        <table>query_log</table>
+        <partition_by>toYYYYMM(event_date)</partition_by>
+        <ttl>event_date + INTERVAL {{ .Values.clickhouse.systemLogs.queryLog.ttlDays }} DAY</ttl>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+      </query_log>
+      {{- else }}
+      <query_log remove="1"/>
+      {{- end }}
+    </clickhouse>
+{{- end }}

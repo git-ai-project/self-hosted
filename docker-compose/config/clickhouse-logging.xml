@@ -1,0 +1,23 @@
+<clickhouse>
+  <!-- Disable most system logs to save storage -->
+  <!-- These logs can grow to 10s of GBs very quickly on active systems -->
+  <query_thread_log remove="1"/>
+  <part_log remove="1"/>
+  <trace_log remove="1"/>
+  <metric_log remove="1"/>
+  <asynchronous_metric_log remove="1"/>
+  <text_log remove="1"/>
+  <session_log remove="1"/>
+  <opentelemetry_span_log remove="1"/>
+  <processors_profile_log remove="1"/>
+  <asynchronous_insert_log remove="1"/>
+
+  <!-- Keep query_log but with 7-day TTL for debugging -->
+  <query_log>
+    <database>system</database>
+    <table>query_log</table>
+    <partition_by>toYYYYMM(event_date)</partition_by>
+    <ttl>event_date + INTERVAL 7 DAY</ttl>
+    <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+  </query_log>
+</clickhouse>

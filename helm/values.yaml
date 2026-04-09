@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/git-ai-project/git-ai-web-ee
-  tag: "c762435"
+  tag: "1cf19b8"
   pullPolicy: IfNotPresent
   pullSecrets: []
 
@@ -106,6 +106,12 @@ clickhouse:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
+  systemLogs:
+    # Most system logs are disabled by default to save storage
+    # query_log is kept with 7-day TTL for basic debugging
+    queryLog:
+      enabled: true
+      ttlDays: 7
   resources:
     requests:
       cpu: 250m

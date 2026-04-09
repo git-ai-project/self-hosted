@@ -86,3 +86,49 @@ kubectl get gateway,virtualservice -n "${HELM_NAMESPACE:-git-ai}"
 
 - Ensure your user has `role='admin'` (`task admin:grant -- <email-or-id>`).
 - In `/admin` -> Organizations, click **Mark Onboarding Complete** for your org.
+
+## ClickHouse running out of storage
+
+ClickHouse system logs (`query_log`, `query_thread_log`, etc.) can consume 10s of GBs on active systems. As of this release, most system logs are disabled by default, with `query_log` kept at a 7-day TTL.
+
+To diagnose storage issues:
+
+```bash
+POD=$(kubectl get pod -n "${HELM_NAMESPACE:-git-ai}" -l app.kubernetes.io/component=clickhouse -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -it "$POD" -n "${HELM_NAMESPACE:-git-ai}" -- clickhouse-client \
+  --user gitai \
+  --password "${CLICKHOUSE_PASSWORD}" \
+  --query "
+    SELECT
+      database,
+      table,
+      formatReadableSize(sum(bytes_on_disk)) AS size,
+      sum(rows) AS rows
+    FROM system.parts
+    WHERE active
+    GROUP BY database, table
+    ORDER BY sum(bytes_on_disk) DESC
+    LIMIT 20
+  "
+```
+
+To immediately free space by truncating system logs:
+
+```bash
+kubectl exec -it "$POD" -n "${HELM_NAMESPACE:-git-ai}" -- clickhouse-client \
+  --user gitai \
+  --password "${CLICKHOUSE_PASSWORD}" \
+  --query "TRUNCATE TABLE system.query_log"
+```
+
+To adjust settings:
+
+```yaml
+clickhouse:
+  systemLogs:
+    queryLog:
+      enabled: true  # set to false to disable entirely
+      ttlDays: 7     # adjust retention period
+```
+
+Then run `task up` to apply changes.
