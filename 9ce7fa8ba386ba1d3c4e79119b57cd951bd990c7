@@ -1,0 +1,36 @@
+helm/templates/clickhouse-configmap.yaml
+  e6ba5adf65fd319c 1-37
+docker-compose/config/clickhouse-logging.xml
+  e6ba5adf65fd319c 1-23
+docker-compose/docker-compose.yml
+  e6ba5adf65fd319c 38
+helm/values.yaml
+  e6ba5adf65fd319c 109-114
+helm/templates/clickhouse-statefulset.yaml
+  e6ba5adf65fd319c 64-65,67-70
+docker-compose/docs/09-troubleshooting.md
+  e6ba5adf65fd319c 67-101
+helm/docs/09-troubleshooting.md
+  e6ba5adf65fd319c 89-134
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.2.8",
+  "base_commit_sha": "9ce7fa8ba386ba1d3c4e79119b57cd951bd990c7",
+  "prompts": {
+    "e6ba5adf65fd319c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fb8c957a-fb71-4696-8713-5fe01baa31d7",
+        "model": "claude-sonnet-4-5-20250929"
+      },
+      "human_author": "Sasha Varlamov",
+      "messages": [],
+      "total_additions": 155,
+      "total_deletions": 2,
+      "accepted_lines": 154,
+      "overriden_lines": 0,
+      "messages_url": "https://dev.usegitai.com/cas/981092a1094aeaabac8ec1a28546f613ca1226cf29ffb3f0be2d2be2d01a2d32"
+    }
+  }
+}
