@@ -61,8 +61,13 @@ spec:
           volumeMounts:
             - name: clickhouse-data
               mountPath: /var/lib/clickhouse
-      {{- if not .Values.clickhouse.persistence.enabled }}
+            - name: clickhouse-config
+              mountPath: /etc/clickhouse-server/config.d/
       volumes:
+        - name: clickhouse-config
+          configMap:
+            name: {{ include "gitai.clickhouseServiceName" . }}-config
+      {{- if not .Values.clickhouse.persistence.enabled }}
         - name: clickhouse-data
           emptyDir: {}
       {{- end }}

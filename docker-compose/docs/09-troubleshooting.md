@@ -64,3 +64,38 @@
   - `/app/migrations/postgres`
   - `/app/migrations/clickhouse`
 - Re-pull image and restart: `docker compose pull && task up`
+
+## ClickHouse running out of storage
+
+ClickHouse system logs (`query_log`, `query_thread_log`, etc.) can consume 10s of GBs on active systems. As of this release, most system logs are disabled by default via `config/clickhouse-logging.xml`.
+
+To diagnose storage issues:
+
+```bash
+docker exec -it <clickhouse-container> clickhouse-client \
+  --user "${CLICKHOUSE_USER}" \
+  --password "${CLICKHOUSE_PASSWORD}" \
+  --query "
+    SELECT
+      database,
+      table,
+      formatReadableSize(sum(bytes_on_disk)) AS size,
+      sum(rows) AS rows
+    FROM system.parts
+    WHERE active
+    GROUP BY database, table
+    ORDER BY sum(bytes_on_disk) DESC
+    LIMIT 20
+  "
+```
+
+To immediately free space by truncating system logs:
+
+```bash
+docker exec -it <clickhouse-container> clickhouse-client \
+  --user "${CLICKHOUSE_USER}" \
+  --password "${CLICKHOUSE_PASSWORD}" \
+  --query "TRUNCATE TABLE system.query_log"
+```
+
+To adjust the TTL or disable `query_log` entirely, edit `config/clickhouse-logging.xml` and restart: `docker compose restart clickhouse`
