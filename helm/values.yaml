@@ -154,9 +154,6 @@ worker:
   dashboard:
     enabled: true
     port: 3001
-  orgSync:
-    intervalSeconds: 86400
-    anchorHourUtc: 0
   resources:
     requests:
       cpu: 500m
