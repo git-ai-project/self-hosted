@@ -25,6 +25,13 @@
 - `BULLMQ_DASHBOARD_ENABLED=true`
 - `BULLMQ_DASHBOARD_PORT=3001`
 
+## Org Sync Schedule
+
+Controls how often the worker runs the nightly org sync job. Both vars are optional.
+
+- `ORG_SYNC_INTERVAL_SECONDS` (default `86400`): seconds between syncs. Set to `3600` for hourly.
+- `ORG_SYNC_ANCHOR_HOUR_UTC` (default `0`, midnight UTC): UTC hour (0–23) to anchor the first run to. For example, `7` targets 7 AM UTC. The anchor only takes effect on first-ever scheduling (fresh install or after a Redis wipe); subsequent runs repeat at the configured interval.
+
 ## Email Delivery
 
 Email is optional overall, but invitation delivery requires a configured provider.
