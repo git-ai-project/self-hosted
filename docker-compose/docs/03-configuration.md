@@ -48,6 +48,13 @@ Backward compatibility:
 - if `EMAIL_PROVIDER` is unset, the app infers `resend` from `RESEND_API_KEY`
 - if `EMAIL_PROVIDER` is unset, the app infers `smtp` when both `SMTP_HOST` and `SMTP_PORT` are set
 
+## Org Sync Schedule
+
+Controls when the worker runs the nightly org sync job. Both vars are optional.
+
+- `ORG_SYNC_CRON_PATTERN` (default `0 3 * * *`): cron expression for the sync schedule. Examples: `0 3 * * *` (daily at 3 AM), `0 */6 * * *` (every 6 hours).
+- `ORG_SYNC_CRON_TZ` (default `America/New_York`): IANA timezone for the cron schedule. Examples: `America/New_York`, `UTC`, `Europe/London`.
+
 ## Storage Backend Requirements
 
 - `STORAGE_BACKEND=local` or `filesystem`

@@ -14,6 +14,8 @@ data:
   WORKER_PUBLIC_BASE_URL: {{ .Values.global.workerPublicBaseUrl | quote }}
   WEB_APP_INTERNAL_BASE_URL: {{ .Values.global.webAppInternalBaseUrl | quote }}
   BULLMQ_PREFIX: {{ .Values.app.bullmqPrefix | quote }}
+  ORG_SYNC_CRON_PATTERN: {{ .Values.worker.orgSync.cronPattern | quote }}
+  ORG_SYNC_CRON_TZ: {{ .Values.worker.orgSync.cronTz | quote }}
   STORAGE_BACKEND: {{ $backend | quote }}
   ANALYZE_BATCH_PROVIDER: {{ .Values.app.analyzeBatchProvider | quote }}
   SKIP_GITLAB_WEBHOOK_SETUP: {{ ternary "true" "false" .Values.app.skipGitLabWebhookSetup | quote }}
