@@ -98,6 +98,13 @@ Provider overlays in this chart:
 - if `ingress.tls[*].hosts` is omitted, Istio TLS servers default to all `ingress.hosts`
 - `ingress.istio.virtualService.gateways` can override gateway references directly
 
+## Org Sync Schedule
+
+Controls how often the worker runs the nightly org sync job. Both values are optional.
+
+- `worker.orgSync.intervalSeconds` (default `86400`): seconds between syncs. Set to `3600` for hourly.
+- `worker.orgSync.anchorHourUtc` (default `0`, midnight UTC): UTC hour (0–23) to anchor the first run to. For example, `7` targets 7 AM UTC. The anchor only takes effect on first-ever scheduling (fresh install or after a Redis wipe); subsequent runs repeat at the configured interval.
+
 ## Existing Secret Mode
 
 Set `secrets.existingSecret` to use a pre-created secret instead of chart-managed secret generation.
