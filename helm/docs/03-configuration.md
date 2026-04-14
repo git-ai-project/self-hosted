@@ -98,6 +98,13 @@ Provider overlays in this chart:
 - if `ingress.tls[*].hosts` is omitted, Istio TLS servers default to all `ingress.hosts`
 - `ingress.istio.virtualService.gateways` can override gateway references directly
 
+## Org Sync Schedule
+
+Controls when the worker runs the nightly org sync job. Both values are optional.
+
+- `worker.orgSync.cronPattern` (default `0 3 * * *`): cron expression for the sync schedule. Examples: `0 3 * * *` (daily at 3 AM), `0 */6 * * *` (every 6 hours).
+- `worker.orgSync.cronTz` (default `America/New_York`): IANA timezone for the cron schedule. Examples: `America/New_York`, `UTC`, `Europe/London`.
+
 ## Existing Secret Mode
 
 Set `secrets.existingSecret` to use a pre-created secret instead of chart-managed secret generation.

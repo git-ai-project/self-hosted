@@ -154,6 +154,9 @@ worker:
   dashboard:
     enabled: true
     port: 3001
+  orgSync:
+    cronPattern: "0 3 * * *"
+    cronTz: "America/New_York"
   resources:
     requests:
       cpu: 500m
