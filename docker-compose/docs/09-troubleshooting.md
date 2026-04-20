@@ -53,8 +53,12 @@
 
 ## Book demo page still appears
 
-- Make sure your user has `role='admin'`
-- Go to `/admin` -> Organizations -> **Mark Onboarding Complete** for your org
+- Ensure your organization was created with `task org:create` (which sets onboarding complete automatically).
+- Make sure your user has `role='admin'` (`task admin:grant -- <email-or-id>`).
+- If you created the org manually before this feature existed, run `task admin:psql` and execute:
+  ```sql
+  UPDATE organization SET onboarding_complete = true WHERE slug = '<your-org-slug>';
+  ```
 
 ## Migrator fails to start
 

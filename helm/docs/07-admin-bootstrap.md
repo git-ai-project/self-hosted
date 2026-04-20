@@ -1,6 +1,11 @@
-# Admin Bootstrap and Onboarding Gate
+# Initial Setup: Create Your Organization
 
-After first sign-in, your account is usually not `admin` yet.
+After deploying the stack, create your first organization using the CLI.
+
+## Prerequisites
+
+1. The stack must be running (`task up` + `task wait`)
+2. At least one user must have signed in to the application
 
 ## 1) Promote Yourself to Admin
 
@@ -8,21 +13,43 @@ After first sign-in, your account is usually not `admin` yet.
 task admin:grant -- <your-email-or-user-id>
 ```
 
-`task admin:grant` and `task admin:psql` target the application database `gitai` by default.
+`task admin:grant`, `task admin:psql`, and `task org:create` target the application database `gitai` by default.
 If you changed `postgresql.auth.database`, run them with `APP_DB_NAME=<your-db>`.
 
-Equivalent SQL (via `task admin:psql`):
+This grants your user the `admin` role, which is required to own an organization
+and gives access to the `/admin` panel for system-wide management.
 
-```sql
-UPDATE "user" SET role='admin' WHERE email='<you@example.com>' OR id='<user_id>';
+## 2) Create an Organization
+
+```bash
+task org:create
 ```
 
-## 2) Remove Book Demo Gating for Your Org
+This interactive command will:
+- List all site admin users
+- Ask you to select the org owner
+- Ask for the organization name
+- Create the org in the database with the selected admin as owner
 
-1. Open `/admin`
-2. Open **Organizations**
-3. Find your org
-4. Open the row action menu (three dots)
-5. Click **Mark Onboarding Complete**
+Only admin users are shown as eligible org owners. If you need to create an org
+for another user, promote them to admin first with `task admin:grant`.
 
-That action sets org onboarding complete and removes the book demo / booking screen.
+We recommend creating a single organization for your entire company. One org can
+connect multiple SCM providers (GitHub, GitLab, Bitbucket) and manage all
+repositories in one place. You can run this command again to create additional
+organizations if needed, but most deployments only need one.
+
+## Re-enabling Self-Service Org Creation
+
+By default, `DISABLE_ORG_CREATION=true` prevents users from creating organizations
+through the UI or API. If you want to allow users to create their own organizations
+(not recommended for most self-hosted deployments), set:
+
+```yaml
+# In your values override (e.g., generated/values.local.yaml)
+app:
+  disableOrgCreation: false
+```
+
+We recommend keeping org creation disabled and using `task org:create` for all
+org provisioning, as it gives administrators full control over the tenant structure.

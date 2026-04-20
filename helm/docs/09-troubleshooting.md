@@ -84,8 +84,12 @@ kubectl get gateway,virtualservice -n "${HELM_NAMESPACE:-git-ai}"
 
 ## Book demo page still appears
 
+- Ensure your organization was created with `task org:create` (which sets onboarding complete automatically).
 - Ensure your user has `role='admin'` (`task admin:grant -- <email-or-id>`).
-- In `/admin` -> Organizations, click **Mark Onboarding Complete** for your org.
+- If you created the org manually before this feature existed, run `task admin:psql` and execute:
+  ```sql
+  UPDATE organization SET onboarding_complete = true WHERE slug = '<your-org-slug>';
+  ```
 
 ## ClickHouse running out of storage
 

@@ -103,3 +103,8 @@ tasks:
     desc: Open psql shell in PostgreSQL pod
     cmds:
       - ./scripts/psql.sh
+
+  org:create:
+    desc: "Create an organization (interactive)"
+    cmds:
+      - node ./scripts/create-org.mjs
