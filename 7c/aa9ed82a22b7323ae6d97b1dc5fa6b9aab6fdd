@@ -1,0 +1,23 @@
+docker-compose/scripts/create-org.mjs
+  s_f6c222a9026e3a::t_5c795ed1e986e7 166-169
+helm/scripts/create-org.mjs
+  s_f6c222a9026e3a::t_4559ce3e34b1c7 165-168
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.3.3",
+  "base_commit_sha": "7caa9ed82a22b7323ae6d97b1dc5fa6b9aab6fdd",
+  "prompts": {},
+  "sessions": {
+    "s_f6c222a9026e3a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "43e779cc-b529-48ed-b41f-5c17f4398543",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Sasha Varlamov",
+      "messages": [],
+      "messages_url": "https://usegitai.com/cas/92b133e2c0e07e3726a8fdb992c64d59895e314a0cd2ea0abfe1d573a24b830d"
+    }
+  }
+}
