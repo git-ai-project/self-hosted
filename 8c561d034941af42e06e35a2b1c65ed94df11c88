@@ -1,0 +1,43 @@
+docker-compose/docs/07-admin-bootstrap.md
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 1,3-8,16-19,21-22,25-32,34-47,49-50
+helm/scripts/create-org.mjs
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 1-181
+helm/docs/09-troubleshooting.md
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 87,89-92
+docker-compose/Taskfile.yml
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 69-73
+helm/Taskfile.yml
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 106-110
+helm/docs/07-admin-bootstrap.md
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 1,3-8,16,19-22,24-25,28-35,37-52,54-55
+docker-compose/docs/02-quickstart.md
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 56,62-68
+docker-compose/docs/09-troubleshooting.md
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 56-61
+docker-compose/scripts/create-org.mjs
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 1-182
+helm/values.yaml
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 62
+docker-compose/.env.example
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 55-59
+helm/templates/configmap.yaml
+  s_f6c222a9026e3a::t_0d8f82f519cdc2 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.3.3",
+  "base_commit_sha": "8c561d034941af42e06e35a2b1c65ed94df11c88",
+  "prompts": {},
+  "sessions": {
+    "s_f6c222a9026e3a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "43e779cc-b529-48ed-b41f-5c17f4398543",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Sasha Varlamov",
+      "messages": [],
+      "messages_url": "https://usegitai.com/cas/f81a2f87ad99a8dcd4d960c6c9d3ac206932248a8b23953a80a867b9f4c1edc4"
+    }
+  }
+}
