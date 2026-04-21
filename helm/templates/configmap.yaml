@@ -19,6 +19,7 @@ data:
   STORAGE_BACKEND: {{ $backend | quote }}
   ANALYZE_BATCH_PROVIDER: {{ .Values.app.analyzeBatchProvider | quote }}
   SKIP_GITLAB_WEBHOOK_SETUP: {{ ternary "true" "false" .Values.app.skipGitLabWebhookSetup | quote }}
+  DISABLE_ORG_CREATION: {{ ternary "true" "false" .Values.app.disableOrgCreation | quote }}
   CLICKHOUSE_HTTP_URL: {{ printf "http://%s:%v" (include "gitai.clickhouseServiceName" .) .Values.clickhouse.service.httpPort | quote }}
   CLICKHOUSE_USER: {{ .Values.clickhouse.auth.user | quote }}
   CLICKHOUSE_DATABASE: {{ .Values.clickhouse.auth.database | quote }}

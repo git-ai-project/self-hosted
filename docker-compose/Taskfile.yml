@@ -66,3 +66,8 @@ tasks:
     desc: Open a psql shell inside the Postgres container
     cmds:
       - ./scripts/psql.sh
+
+  org:create:
+    desc: "Create an organization (interactive)"
+    cmds:
+      - node ./scripts/create-org.mjs

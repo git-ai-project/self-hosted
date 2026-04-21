@@ -53,10 +53,16 @@ Optional dashboard check:
 curl -I http://localhost:3001
 ```
 
-## 6) First Admin Bootstrap
+## 6) Promote Yourself to Admin and Create Your Organization
 
 ```bash
 task admin:grant -- <your-email-or-user-id>
 ```
 
-Then use `/admin` -> Organizations -> **Mark Onboarding Complete** for your org.
+Then create your organization:
+
+```bash
+task org:create
+```
+
+This will list site admin users, let you pick an owner, and create the org.
