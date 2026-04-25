@@ -10,6 +10,9 @@ This repository contains the official self-hosting packages for **Git AI Enterpr
 
 Full documentation for each deployment method is in its respective folder (`docker-compose/` or `helm/`).
 
+<img width="1051" height="741" alt="image" src="https://github.com/user-attachments/assets/e145f8cd-279a-49dc-8f30-03f5611175d2" />
+
+
 ### Docker Compose — [`docker-compose/`](./docker-compose/)
 
 > **For quick local testing only.** The Docker Compose setup is intended for getting Git AI running locally or for very small proof-of-concept evaluations. We do not recommend it for anything beyond that — use the Helm chart for real deployments.
