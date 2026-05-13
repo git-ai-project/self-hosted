@@ -1,0 +1,16 @@
+docker-compose/docker-compose.yml
+  h_55c03ed47cd416 46,61,74,106
+helm/values.yaml
+  h_55c03ed47cd416 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.4.8",
+  "base_commit_sha": "ad09ca5a9a294e99cf0fa87d9d8d9a2c04aeb58a",
+  "prompts": {},
+  "humans": {
+    "h_55c03ed47cd416": {
+      "author": "Sasha Varlamov <sasha@sashavarlamov.com>"
+    }
+  }
+}
