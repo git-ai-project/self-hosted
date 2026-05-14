@@ -107,6 +107,21 @@ clickhouse:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
+  # Override the ClickHouse <listen_host> config. Empty preserves the upstream
+  # default (localhost only). Set to "0.0.0.0" to listen on all interfaces — the
+  # ClickHouse pod is reached over the pod network by other pods (web/worker/
+  # migrator), so most Kubernetes deployments will want "0.0.0.0".
+  listenHost: ""
+  # Logger configuration. The upstream default writes XML-formatted logs to
+  # /var/log/clickhouse-server/. When `structuredStdout.enabled` is true, the
+  # chart instead configures ClickHouse to emit JSON-formatted logs on stdout
+  # and disables file logging — better for Kubernetes log aggregators like
+  # Fluent Bit, Vector, Groundcover, etc.
+  logging:
+    structuredStdout:
+      enabled: false
+      # trace | debug | information | warning | error
+      level: information
   systemLogs:
     # Most system logs are disabled by default to save storage
     # query_log is kept with 7-day TTL for basic debugging

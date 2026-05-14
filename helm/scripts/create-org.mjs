@@ -80,10 +80,14 @@ function getPostgresPassword() {
 }
 
 function runSQL(pod, password, sql) {
-  const escaped = sql.replace(/'/g, "'\\''");
+  // Single-quote-safe shell escape: foo -> 'foo', fo'o -> 'fo'\''o'.
+  // We pass the password as a single-quoted shell arg and feed the SQL to psql
+  // via stdin (kubectl exec -i). Going through stdin means SQL identifiers like
+  // "user" and quoted string literals don't need any escaping at this layer.
+  const sq = (s) => "'" + String(s).replace(/'/g, "'\\''") + "'";
   return execSync(
-    `kubectl exec -n "${NAMESPACE}" "${pod}" -- bash -c "PGPASSWORD='${password}' psql -h 127.0.0.1 -U postgres -d '${APP_DB_NAME}' -t -A -c '${escaped}'"`,
-    { encoding: "utf8" }
+    `kubectl exec -i -n ${sq(NAMESPACE)} ${sq(pod)} -- env PGPASSWORD=${sq(password)} psql -h 127.0.0.1 -U postgres -d ${sq(APP_DB_NAME)} -t -A`,
+    { encoding: "utf8", input: sql }
   ).trim();
 }
 

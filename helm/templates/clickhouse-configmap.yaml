@@ -9,6 +9,9 @@ metadata:
 data:
   logging.xml: |
     <clickhouse>
+      {{- if .Values.clickhouse.listenHost }}
+      <listen_host>{{ .Values.clickhouse.listenHost }}</listen_host>
+      {{- end }}
       <!-- Disable most system logs to save storage -->
       <query_thread_log remove="1"/>
       <part_log remove="1"/>
@@ -32,6 +35,28 @@ data:
       </query_log>
       {{- else }}
       <query_log remove="1"/>
+      {{- end }}
+
+      {{- if .Values.clickhouse.logging.structuredStdout.enabled }}
+      <!-- K8s-friendly logger: JSON to stdout, file logging disabled. -->
+      <logger>
+        <level>{{ .Values.clickhouse.logging.structuredStdout.level }}</level>
+        <format>json</format>
+        <json>
+          <date>date</date>
+          <time>time</time>
+          <thread_id>thread_id</thread_id>
+          <level>level</level>
+          <query_id>query_id</query_id>
+          <logger_name>logger_name</logger_name>
+          <message>message</message>
+          <source_file>source_file</source_file>
+          <source_line>source_line</source_line>
+        </json>
+        <log>/dev/null</log>
+        <errorlog>/dev/null</errorlog>
+        <console>1</console>
+      </logger>
       {{- end }}
     </clickhouse>
 {{- end }}
