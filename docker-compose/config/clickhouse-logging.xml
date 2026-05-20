@@ -1,16 +1,39 @@
 <clickhouse>
   <!-- Disable most system logs to save storage -->
-  <!-- These logs can grow to 10s of GBs very quickly on active systems -->
-  <query_thread_log remove="1"/>
-  <part_log remove="1"/>
-  <trace_log remove="1"/>
-  <metric_log remove="1"/>
-  <asynchronous_metric_log remove="1"/>
-  <text_log remove="1"/>
-  <session_log remove="1"/>
-  <opentelemetry_span_log remove="1"/>
-  <processors_profile_log remove="1"/>
-  <asynchronous_insert_log remove="1"/>
+  <!-- ENGINE = Null keeps tables queryable but discards all writes to disk -->
+  <query_thread_log>
+    <engine>ENGINE = Null</engine>
+  </query_thread_log>
+  <part_log>
+    <engine>ENGINE = Null</engine>
+  </part_log>
+  <trace_log>
+    <engine>ENGINE = Null</engine>
+  </trace_log>
+  <metric_log>
+    <engine>ENGINE = Null</engine>
+  </metric_log>
+  <asynchronous_metric_log>
+    <engine>ENGINE = Null</engine>
+  </asynchronous_metric_log>
+  <text_log>
+    <engine>ENGINE = Null</engine>
+  </text_log>
+  <session_log>
+    <engine>ENGINE = Null</engine>
+  </session_log>
+  <opentelemetry_span_log>
+    <engine>ENGINE = Null</engine>
+  </opentelemetry_span_log>
+  <processors_profile_log>
+    <engine>ENGINE = Null</engine>
+  </processors_profile_log>
+  <asynchronous_insert_log>
+    <engine>ENGINE = Null</engine>
+  </asynchronous_insert_log>
+  <error_log>
+    <engine>ENGINE = Null</engine>
+  </error_log>
 
   <!-- Keep query_log but with 7-day TTL for debugging -->
   <query_log>
