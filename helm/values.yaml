@@ -59,6 +59,7 @@ app:
   bullmqPrefix: "{git-ai}"
   skipGitLabWebhookSetup: false
   prCommentOrgs: ""
+  enterpriseOrgIds: ""
   disableOrgCreation: true
 
 postgresql:

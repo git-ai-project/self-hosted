@@ -38,6 +38,9 @@ data:
   {{- if .Values.app.prCommentOrgs }}
   PR_COMMENT_ORGS: {{ .Values.app.prCommentOrgs | quote }}
   {{- end }}
+  {{- if .Values.app.enterpriseOrgIds }}
+  ENTERPRISE_ORG_IDS: {{ .Values.app.enterpriseOrgIds | quote }}
+  {{- end }}
   {{- if eq $backend "local" }}
   LOCAL_STORAGE_PATH: {{ .Values.storage.local.path | quote }}
   {{- end }}
