@@ -1,37 +1,37 @@
 <clickhouse>
   <!-- Disable most system logs to save storage -->
   <!-- ENGINE = Null keeps tables queryable but discards all writes to disk -->
-  <query_thread_log>
+  <query_thread_log replace="1">
     <engine>ENGINE = Null</engine>
   </query_thread_log>
-  <part_log>
+  <part_log replace="1">
     <engine>ENGINE = Null</engine>
   </part_log>
-  <trace_log>
+  <trace_log replace="1">
     <engine>ENGINE = Null</engine>
   </trace_log>
-  <metric_log>
+  <metric_log replace="1">
     <engine>ENGINE = Null</engine>
   </metric_log>
-  <asynchronous_metric_log>
+  <asynchronous_metric_log replace="1">
     <engine>ENGINE = Null</engine>
   </asynchronous_metric_log>
-  <text_log>
+  <text_log replace="1">
     <engine>ENGINE = Null</engine>
   </text_log>
-  <session_log>
+  <session_log replace="1">
     <engine>ENGINE = Null</engine>
   </session_log>
-  <opentelemetry_span_log>
+  <opentelemetry_span_log replace="1">
     <engine>ENGINE = Null</engine>
   </opentelemetry_span_log>
-  <processors_profile_log>
+  <processors_profile_log replace="1">
     <engine>ENGINE = Null</engine>
   </processors_profile_log>
-  <asynchronous_insert_log>
+  <asynchronous_insert_log replace="1">
     <engine>ENGINE = Null</engine>
   </asynchronous_insert_log>
-  <error_log>
+  <error_log replace="1">
     <engine>ENGINE = Null</engine>
   </error_log>
 
