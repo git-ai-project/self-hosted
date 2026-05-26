@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/git-ai-project/git-ai-web-ee
-  tag: "f923cc5"
+  tag: "d9553e3"
   pullPolicy: IfNotPresent
   pullSecrets: []
 
