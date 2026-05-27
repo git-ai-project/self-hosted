@@ -1,0 +1,21 @@
+scripts/bump-image-tag.sh
+  s_9cd4d8c3011c85::t_66894be93aa871 41
+  s_9cd4d8c3011c85::t_4beeb9e17e72cb 49-50
+  s_9cd4d8c3011c85::t_626fe2219bb3e7 1-40,42-48,51-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.5.1",
+  "base_commit_sha": "d635c4554542b3516217a2132c238af7c0b2c522",
+  "prompts": {},
+  "sessions": {
+    "s_9cd4d8c3011c85": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5eeeff8f-5c39-4e43-b246-ca737353799f",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Sasha Varlamov <sasha@sashavarlamov.com>"
+    }
+  }
+}
