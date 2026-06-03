@@ -43,7 +43,7 @@ services:
       retries: 10
 
   migrator-postgres:
-    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:e1f6619}
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:2705a2e}
     restart: "no"
     depends_on:
       db:
@@ -58,7 +58,7 @@ services:
         node /app/scripts/migrate-postgres.mjs
 
   migrator-clickhouse:
-    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:e1f6619}
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:2705a2e}
     restart: "no"
     depends_on:
       clickhouse:
@@ -88,7 +88,7 @@ services:
     command: ["sh", "/cleanup.sh"]
 
   web:
-    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:e1f6619}
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:2705a2e}
     restart: unless-stopped
     env_file:
       - ./.env
@@ -120,7 +120,7 @@ services:
       retries: 20
 
   sql-api:
-    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:e1f6619}
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:2705a2e}
     profiles: ["sql-api"]
     restart: unless-stopped
     env_file:
@@ -139,7 +139,7 @@ services:
       - "127.0.0.1:${SQL_API_PORT:-5432}:${SQL_API_PORT:-5432}"
 
   worker:
-    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:e1f6619}
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:2705a2e}
     restart: unless-stopped
     env_file:
       - ./.env
