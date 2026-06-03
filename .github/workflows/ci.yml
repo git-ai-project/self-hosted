@@ -1,0 +1,286 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Helm and Docker Compose
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+
+          curl -fsSL https://get.helm.sh/helm-v3.15.4-linux-amd64.tar.gz -o /tmp/helm.tgz
+          tar -xzf /tmp/helm.tgz -C /tmp
+          sudo install /tmp/linux-amd64/helm /usr/local/bin/helm
+
+          helm version
+          docker compose version
+
+      - name: Validate Helm chart renders
+        run: ./helm/scripts/test-render.sh
+
+      - name: Validate Docker Compose renders
+        working-directory: docker-compose
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cp .env.example .env
+          mkdir -p generated
+          : > generated/scm.env
+          trap 'rm -f .env generated/scm.env /tmp/compose-default.json /tmp/compose-sql.json; rmdir generated 2>/dev/null || true' EXIT
+
+          docker compose -f docker-compose.yml config --format json > /tmp/compose-default.json
+
+          SQL_API_USER=analytics \
+            SQL_API_PASSWORD=super-secret \
+            docker compose -f docker-compose.yml --profile sql-api config --format json > /tmp/compose-sql.json
+
+          python3 - <<'PY'
+          import json
+          import sys
+
+          def env_for(service):
+              return service.get("environment") or {}
+
+          with open("/tmp/compose-default.json") as f:
+              default = json.load(f)
+
+          default_services = default["services"]
+          if "sql-api" in default_services:
+              sys.exit("sql-api service must not render without the sql-api profile")
+
+          forbidden_web_env = {
+              "SQL_API_ONLY",
+              "SQL_API_ENABLED",
+              "SQL_API_USER",
+              "SQL_API_PASSWORD",
+          }
+          for name in ("web", "worker", "migrator-postgres", "migrator-clickhouse"):
+              env = env_for(default_services[name])
+              leaked = sorted(forbidden_web_env.intersection(env))
+              if leaked:
+                  sys.exit(f"{name} must not receive SQL API control or credential env vars: {leaked}")
+
+          with open("/tmp/compose-sql.json") as f:
+              sql_profile = json.load(f)
+
+          services = sql_profile["services"]
+          sql_service = services.get("sql-api")
+          if not sql_service:
+              sys.exit("sql-api service must render with the sql-api profile")
+
+          env = env_for(sql_service)
+          expected_env = {
+              "SQL_API_ONLY": "true",
+              "SQL_API_ENABLED": "true",
+              "SQL_API_USER": "analytics",
+              "SQL_API_PASSWORD": "super-secret",
+          }
+          for key, expected in expected_env.items():
+              actual = env.get(key)
+              if actual != expected:
+                  sys.exit(f"sql-api {key} expected {expected!r}, got {actual!r}")
+
+          published = sql_service.get("ports") or []
+          if not published:
+              sys.exit("sql-api service must publish a host port")
+
+          port = published[0]
+          if port.get("host_ip") != "127.0.0.1":
+              sys.exit(f"sql-api port must bind to 127.0.0.1, got {port.get('host_ip')!r}")
+          if str(port.get("published")) != "5432" or str(port.get("target")) != "5432":
+              sys.exit(f"sql-api port must map 5432:5432 by default, got {port!r}")
+
+          web_env = env_for(services["web"])
+          leaked = sorted(forbidden_web_env.intersection(web_env))
+          if leaked:
+              sys.exit(f"web must not receive SQL API control or credential env vars with profile enabled: {leaked}")
+          PY
+
+  minikube-smoke:
+    name: Minikube Helm Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y conntrack curl ripgrep
+
+          curl -fsSL https://get.helm.sh/helm-v3.15.4-linux-amd64.tar.gz -o /tmp/helm.tgz
+          tar -xzf /tmp/helm.tgz -C /tmp
+          sudo install /tmp/linux-amd64/helm /usr/local/bin/helm
+
+          curl -fsSL https://dl.k8s.io/release/v1.30.4/bin/linux/amd64/kubectl -o /tmp/kubectl
+          sudo install /tmp/kubectl /usr/local/bin/kubectl
+
+          curl -fsSL https://storage.googleapis.com/minikube/releases/v1.33.1/minikube-linux-amd64 -o /tmp/minikube
+          sudo install /tmp/minikube /usr/local/bin/minikube
+
+          helm version
+          kubectl version --client=true
+          minikube version
+
+      - name: Start minikube
+        shell: bash
+        run: |
+          set -euo pipefail
+          minikube start --driver=docker --wait=all --cpus=2 --memory=4096
+          kubectl cluster-info
+
+      - name: Build local application smoke image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$RUNNER_TEMP/git-ai-ci-image"
+          cat > "$RUNNER_TEMP/git-ai-ci-image/Dockerfile" <<'DOCKER'
+          FROM node:22-alpine
+          WORKDIR /app
+          RUN mkdir -p scripts bullmq-worker migrations/postgres migrations/clickhouse
+          RUN printf '%s\n' \
+            'const http = require("http");' \
+            'const port = Number(process.env.PORT || 3000);' \
+            'http.createServer((req, res) => {' \
+            '  if (req.url === "/api/health") {' \
+            '    res.writeHead(200, { "content-type": "text/plain" });' \
+            '    res.end("ok");' \
+            '    return;' \
+            '  }' \
+            '  res.writeHead(200, { "content-type": "text/plain" });' \
+            '  res.end("ok");' \
+            '}).listen(port, "0.0.0.0");' \
+            > server.js
+          RUN printf '#!/bin/sh\nexit 0\n' > scripts/migrate-clickhouse.sh && chmod +x scripts/migrate-clickhouse.sh
+          RUN printf 'process.exit(0)\n' > scripts/migrate-postgres.mjs
+          RUN printf 'setInterval(() => {}, 1 << 30)\n' > bullmq-worker/worker-entrypoint.js
+          CMD ["node", "/app/server.js"]
+          DOCKER
+
+          docker build -t git-ai-ci:local "$RUNNER_TEMP/git-ai-ci-image"
+          minikube image load git-ai-ci:local
+
+      - name: Install Helm chart
+        working-directory: helm
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cat > "$RUNNER_TEMP/ci-values.yaml" <<'YAML'
+          image:
+            repository: git-ai-ci
+            tag: local
+            pullPolicy: Never
+
+          storage:
+            backend: aws
+            aws:
+              workerBucketName: ci-bucket
+
+          postgresql:
+            enabled: false
+
+          valkey:
+            enabled: false
+
+          clickhouse:
+            enabled: false
+
+          migrations:
+            enabled: false
+
+          web:
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
+
+          worker:
+            dashboard:
+              enabled: false
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
+
+          sqlApi:
+            enabled: true
+            username: analytics
+            password: super-secret
+          YAML
+
+          helm dependency update .
+          helm upgrade --install ci . \
+            --namespace git-ai-ci \
+            --create-namespace \
+            --values "$RUNNER_TEMP/ci-values.yaml" \
+            --wait \
+            --timeout 5m
+
+      - name: Verify Kubernetes rollout and SQL isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          kubectl -n git-ai-ci rollout status deployment/ci-git-ai-self-hosting-web --timeout=2m
+          kubectl -n git-ai-ci rollout status deployment/ci-git-ai-self-hosting-worker --timeout=2m
+          kubectl -n git-ai-ci rollout status deployment/ci-git-ai-self-hosting-sql --timeout=2m
+
+          kubectl -n git-ai-ci get service ci-git-ai-self-hosting-sql -o json > /tmp/sql-service.json
+          python3 - <<'PY'
+          import json
+          import sys
+
+          with open("/tmp/sql-service.json") as f:
+              service = json.load(f)
+
+          if service["spec"]["type"] != "ClusterIP":
+              sys.exit(f"SQL API service must be ClusterIP, got {service['spec']['type']!r}")
+
+          ports = service["spec"].get("ports") or []
+          if len(ports) != 1:
+              sys.exit(f"SQL API service must expose exactly one port, got {ports!r}")
+          port = ports[0]
+          if port.get("name") != "sql" or port.get("port") != 5432 or port.get("targetPort") != "sql":
+              sys.exit(f"SQL API service must expose named sql port 5432 -> sql, got {port!r}")
+          PY
+
+          kubectl -n git-ai-ci get deployment ci-git-ai-self-hosting-web -o yaml > /tmp/web-deployment.yaml
+          if rg -q 'name: SQL_API_(ONLY|ENABLED|USER|PASSWORD)|name: sql-api|name: sql$' /tmp/web-deployment.yaml; then
+            echo "web deployment must not expose SQL API controls, credentials, or ports" >&2
+            exit 1
+          fi
+
+          kubectl -n git-ai-ci get deployment ci-git-ai-self-hosting-sql -o yaml > /tmp/sql-deployment.yaml
+          rg -q 'name: SQL_API_ONLY' /tmp/sql-deployment.yaml
+          rg -q 'name: SQL_API_ENABLED' /tmp/sql-deployment.yaml
+          rg -q 'name: SQL_API_USER' /tmp/sql-deployment.yaml
+          rg -q 'name: SQL_API_PASSWORD' /tmp/sql-deployment.yaml
+          rg -q 'name: sql' /tmp/sql-deployment.yaml
