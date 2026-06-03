@@ -48,6 +48,17 @@ kubectl get svc -n "${HELM_NAMESPACE:-git-ai}" | rg worker-dashboard
 kubectl port-forward -n "${HELM_NAMESPACE:-git-ai}" svc/<worker-dashboard-service> 3001:3001
 ```
 
+## Optional SQL API
+
+If `sqlApi.enabled=true`, a dedicated SQL API deployment and Service are created.
+
+Find the service and port-forward:
+
+```bash
+kubectl get svc -n "${HELM_NAMESPACE:-git-ai}" | rg -- '-sql'
+kubectl port-forward -n "${HELM_NAMESPACE:-git-ai}" svc/<sql-service> 5432:5432
+```
+
 ## Backups
 
 Back up at least:

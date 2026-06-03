@@ -24,6 +24,10 @@ This package does not configure TLS/reverse proxy automatically. Use your own in
 
 For a guided first-time run, use `task bootstrap`.
 
+## Optional SQL API
+
+To expose the Postgres-compatible SQL API locally, set both `SQL_API_USER` and `SQL_API_PASSWORD` in your shell, then start with `docker compose --profile sql-api up -d`. The default install does not bind the SQL port, and the profile runs a separate `sql-api` service rather than changing `web`. The SQL port binds to `127.0.0.1` on the Docker host. Do not put the SQL credentials in `.env`; that file is shared by the other Compose services.
+
 ## Important First-Run Admin Step
 
 After your first sign-in:

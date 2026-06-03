@@ -55,6 +55,27 @@ Controls when the worker runs the nightly org sync job. Both vars are optional.
 - `ORG_SYNC_CRON_PATTERN` (default `0 3 * * *`): cron expression for the sync schedule. Examples: `0 3 * * *` (daily at 3 AM), `0 */6 * * *` (every 6 hours).
 - `ORG_SYNC_CRON_TZ` (default `America/New_York`): IANA timezone for the cron schedule. Examples: `America/New_York`, `UTC`, `Europe/London`.
 
+## Optional SQL API
+
+The Postgres-compatible SQL API is disabled by default. To enable it:
+
+1. Set both `SQL_API_USER` and `SQL_API_PASSWORD` in your shell.
+2. Start Compose with the SQL profile:
+
+```bash
+export SQL_API_USER=analytics
+export SQL_API_PASSWORD=replace-me
+docker compose --profile sql-api up -d
+```
+
+The SQL API listens on `SQL_API_PORT` (default `5432`) through the optional `sql-api` service and binds to `127.0.0.1` on the Docker host. It has self-hosted instance-admin data access. The profile service sets `SQL_API_ENABLED=true`; do not set it globally in `.env`. Do not put `SQL_API_USER` or `SQL_API_PASSWORD` in `.env`; that file is shared by the other Compose services. The SQL API service exits during startup if either value is empty.
+
+Example:
+
+```bash
+psql -h localhost -p 5432 -U "$SQL_API_USER" -d gitai
+```
+
 ## Storage Backend Requirements
 
 - `STORAGE_BACKEND=local` or `filesystem`

@@ -57,6 +57,10 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- printf "%s-clickhouse-headless" (include "gitai.fullname" .) -}}
 {{- end -}}
 
+{{- define "gitai.sqlServiceName" -}}
+{{- printf "%s-sql" (include "gitai.fullname" .) -}}
+{{- end -}}
+
 {{- define "gitai.postgresqlHost" -}}
 {{- if .Values.postgresql.fullnameOverride -}}
 {{- .Values.postgresql.fullnameOverride -}}
@@ -176,6 +180,18 @@ kubernetes.io/ingress.class: gce
 
 {{- if and .Values.ingress.enabled (empty .Values.ingress.hosts) -}}
 {{- fail "ingress.hosts must contain at least one host when ingress.enabled=true" -}}
+{{- end -}}
+
+{{- if .Values.sqlApi.enabled -}}
+{{- if empty .Values.sqlApi.username -}}
+{{- fail "sqlApi.username is required when sqlApi.enabled=true" -}}
+{{- end -}}
+{{- if and (not .Values.secrets.existingSecret) (empty .Values.sqlApi.password) -}}
+{{- fail "sqlApi.password is required when sqlApi.enabled=true and secrets.existingSecret is not set" -}}
+{{- end -}}
+{{- if or (lt (int .Values.sqlApi.port) 1) (gt (int .Values.sqlApi.port) 65535) -}}
+{{- fail "sqlApi.port must be between 1 and 65535" -}}
+{{- end -}}
 {{- end -}}
 
 {{- if .Values.ingress.enabled -}}

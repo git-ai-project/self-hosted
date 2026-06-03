@@ -119,6 +119,25 @@ services:
       timeout: 5s
       retries: 20
 
+  sql-api:
+    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:e1f6619}
+    profiles: ["sql-api"]
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      SQL_API_ONLY: "true"
+      SQL_API_ENABLED: "true"
+      SQL_API_USER: ${SQL_API_USER:-}
+      SQL_API_PASSWORD: ${SQL_API_PASSWORD:-}
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      migrator-clickhouse:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${SQL_API_PORT:-5432}:${SQL_API_PORT:-5432}"
+
   worker:
     image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:e1f6619}
     restart: unless-stopped

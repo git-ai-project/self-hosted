@@ -51,6 +51,10 @@ Provider overlays are included:
 - `values.azure.yaml`
 - `values.istio.yaml`
 
+## Optional SQL API
+
+Set `sqlApi.enabled=true` with both `sqlApi.username` and `sqlApi.password` to run a dedicated Postgres-compatible SQL API deployment and ClusterIP Service. It is disabled by default and is not routed through HTTP ingress or the web Service. If you use `secrets.existingSecret`, provide `SQL_API_PASSWORD` in that Secret instead of `sqlApi.password`.
+
 ## Quick Start
 
 1. Git clone this repo locally

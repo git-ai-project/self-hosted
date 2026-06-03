@@ -40,6 +40,88 @@ if rg -q "kind: VirtualService" "$TMP_DIR/local.yaml"; then
   echo "Did not expect Istio VirtualService in portable default render" >&2
   exit 1
 fi
+if rg -q "name: local-git-ai-self-hosting-sql" "$TMP_DIR/local.yaml"; then
+  echo "Did not expect SQL API service in default render" >&2
+  exit 1
+fi
+if rg -q "SQL_API_PASSWORD" "$TMP_DIR/local.yaml"; then
+  echo "Did not expect SQL API password in default render" >&2
+  exit 1
+fi
+
+cat > "$TMP_DIR/sql-api-values.yaml" <<'YAML'
+sqlApi:
+  enabled: true
+  username: analytics
+  password: super-secret
+YAML
+helm template sql-api . -f "$TMP_DIR/sql-api-values.yaml" > "$TMP_DIR/sql-api.yaml"
+if ! rg -q "name: sql-api-git-ai-self-hosting-sql" "$TMP_DIR/sql-api.yaml"; then
+  echo "Expected dedicated SQL API service when sqlApi.enabled=true" >&2
+  exit 1
+fi
+if ! rg -q "app.kubernetes.io/component: sql-api" "$TMP_DIR/sql-api.yaml"; then
+  echo "Expected SQL API service component label" >&2
+  exit 1
+fi
+if ! rg -q "name: sql" "$TMP_DIR/sql-api.yaml"; then
+  echo "Expected SQL container/service port name" >&2
+  exit 1
+fi
+if ! rg -q 'name: SQL_API_ENABLED' "$TMP_DIR/sql-api.yaml"; then
+  echo "Expected SQL_API_ENABLED config when sqlApi.enabled=true" >&2
+  exit 1
+fi
+if ! rg -q 'value: "true"' "$TMP_DIR/sql-api.yaml"; then
+  echo "Expected SQL_API_ENABLED=true when sqlApi.enabled=true" >&2
+  exit 1
+fi
+if ! rg -q 'name: SQL_API_USER' "$TMP_DIR/sql-api.yaml"; then
+  echo "Expected SQL_API_USER config when sqlApi.enabled=true" >&2
+  exit 1
+fi
+if ! rg -q 'value: "analytics"' "$TMP_DIR/sql-api.yaml"; then
+  echo "Expected configured SQL_API_USER when sqlApi.enabled=true" >&2
+  exit 1
+fi
+if ! rg -q 'SQL_API_PASSWORD: "super-secret"' "$TMP_DIR/sql-api.yaml"; then
+  echo "Expected SQL_API_PASSWORD secret when sqlApi.enabled=true" >&2
+  exit 1
+fi
+awk '/# Source: git-ai-self-hosting\/templates\/web-deployment.yaml/{flag=1; next} /^---$/{if(flag){exit}} flag{print}' "$TMP_DIR/sql-api.yaml" > "$TMP_DIR/sql-api-web-deployment.yaml"
+if rg -q '^\s*- name: sql$' "$TMP_DIR/sql-api-web-deployment.yaml"; then
+  echo "Did not expect SQL port on web deployment when sqlApi.enabled=true" >&2
+  exit 1
+fi
+
+cat > "$TMP_DIR/invalid-sql-api-values.yaml" <<'YAML'
+sqlApi:
+  enabled: true
+YAML
+if helm template invalid-sql-api . -f "$TMP_DIR/invalid-sql-api-values.yaml" >/dev/null 2>&1; then
+  echo "Expected invalid SQL API config to fail chart validation" >&2
+  exit 1
+fi
+
+cat > "$TMP_DIR/invalid-sql-api-no-password-values.yaml" <<'YAML'
+sqlApi:
+  enabled: true
+  username: analytics
+YAML
+if helm template invalid-sql-api-no-password . -f "$TMP_DIR/invalid-sql-api-no-password-values.yaml" >/dev/null 2>&1; then
+  echo "Expected SQL API config without password to fail chart validation" >&2
+  exit 1
+fi
+
+cat > "$TMP_DIR/invalid-sql-api-no-username-values.yaml" <<'YAML'
+sqlApi:
+  enabled: true
+  password: super-secret
+YAML
+if helm template invalid-sql-api-no-username . -f "$TMP_DIR/invalid-sql-api-no-username-values.yaml" >/dev/null 2>&1; then
+  echo "Expected SQL API config without username to fail chart validation" >&2
+  exit 1
+fi
 
 cat > "$TMP_DIR/aws-values.yaml" <<'YAML'
 storage:

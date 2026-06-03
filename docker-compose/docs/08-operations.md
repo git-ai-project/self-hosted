@@ -34,6 +34,18 @@ Both migrators are idempotent and keep migration journals in the target database
   - `BULLMQ_DASHBOARD_PORT` (default `3001`)
 - Warning: BullMQ dashboard has no built-in auth. Restrict access with firewall/VPN/reverse-proxy auth.
 
+## Optional SQL API
+
+Start the dedicated SQL API service with:
+
+```bash
+export SQL_API_USER=analytics
+export SQL_API_PASSWORD=replace-me
+docker compose --profile sql-api up -d
+```
+
+Tail logs with `task logs -- sql-api`.
+
 ## Backups
 
 Back up at least:
