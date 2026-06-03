@@ -33,6 +33,22 @@ Backward compatibility:
 Default slugs: `github`, `gitlab`, `bitbucket`.
 Change a slug only if you run multiple instances of the same provider.
 
+## Optional SQL API
+
+The Postgres-compatible SQL API is disabled by default. Enable it with:
+
+```yaml
+sqlApi:
+  enabled: true
+  port: 5432
+  username: analytics
+  password: replace-me
+```
+
+When enabled, the chart creates a dedicated SQL deployment and ClusterIP Service named `<release>-git-ai-self-hosting-sql`. This is PostgreSQL protocol traffic, not HTTP ingress traffic. The SQL API has self-hosted instance-admin data access. Both `sqlApi.username` and a SQL API password are required.
+
+If `secrets.existingSecret` is set, provide `SQL_API_PASSWORD` in that secret instead of setting `sqlApi.password`.
+
 ## Storage Backend
 
 Set `storage.backend` to one of:
@@ -120,6 +136,7 @@ Expected keys include at least:
 - `SCM_WEBHOOK_SECRET_KEY`
 - `CLICKHOUSE_PASSWORD`
 - `LICENSE_KEY`
+- `SQL_API_PASSWORD` when `sqlApi.enabled=true`
 - `RESEND_API_KEY` when `email.provider=resend`
 - `SMTP_PASSWORD` when `email.provider=smtp` and `email.smtp.username` is set
 - `AZURE_STORAGE_CONNECTION_STRING` (or your configured `storage.azure.connectionStringSecretKey`) when `storage.backend=azure`

@@ -10,3 +10,4 @@ Goals:
 - Storage backend switch between local PVC and cloud bucket modes
 - Traffic entry switch between nginx ingress and Istio
 - Portable base defaults with optional AWS/GCP/Azure overlay values
+- Optional dedicated Postgres-compatible SQL API deployment and Service

@@ -7,6 +7,7 @@ This self-hosting package runs:
 - `db`: Postgres
 - `redis`: Valkey/Redis
 - `clickhouse`: analytics store
+- `sql-api`: optional Postgres-compatible analytics SQL API (`--profile sql-api`)
 - `migrator-postgres`: one-shot schema migrator
 - `migrator-clickhouse`: one-shot schema migrator
 

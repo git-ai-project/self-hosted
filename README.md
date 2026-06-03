@@ -45,7 +45,7 @@ Best for: teams already running Kubernetes who want scalable, cloud-native deplo
 
 ## Recommended Infrastructure
 
-The Helm chart deploys five components: **Web** (API/UI), **Worker** (background jobs), **PostgreSQL**, **Valkey** (Redis-compatible), and **ClickHouse** (analytics). Below are sizing guidelines for a production deployment.
+The Helm chart deploys five core components: **Web** (API/UI), **Worker** (background jobs), **PostgreSQL**, **Valkey** (Redis-compatible), and **ClickHouse** (analytics). An optional dedicated **SQL API** workload can expose the analytics layer over PostgreSQL protocol. Below are sizing guidelines for a production deployment.
 
 ### Compute
 
@@ -56,6 +56,7 @@ The Helm chart deploys five components: **Web** (API/UI), **Worker** (background
 | ClickHouse | 250m / 2 | 512 Mi / 4 Gi | 1 |
 | PostgreSQL | Bitnami defaults | Bitnami defaults | 1 |
 | Valkey | Bitnami defaults | Bitnami defaults | 1 |
+| SQL API | Web defaults | Web defaults | 1 when enabled |
 
 **Minimum cluster size:** A single 4-vCPU / 16 GB node can run a proof-of-concept with default resource requests (excluding Kubernetes overhead). For production, we recommend **at least 3 nodes with 4+ vCPU and 16 GB each** to allow workloads to spread and tolerate a node failure.
 
@@ -78,7 +79,7 @@ For production deployments using cloud object storage (S3, Azure Blob, or GCS), 
 - **TLS:** Terminate TLS at the ingress layer. The chart supports `ingress.tls` configuration for certificate secrets.
 - **Outbound access:** Application pods need HTTPS egress to your SCM provider (GitHub, GitLab, or Bitbucket) for webhook delivery and API calls.
 - **Inbound access:** Your SCM provider must be able to reach the ingress endpoint at `global.webBaseUrl` to deliver webhooks.
-- **Internal:** All inter-component communication stays within the cluster via ClusterIP services on ports 3000 (web), 5432 (PostgreSQL), 6379 (Valkey), and 8123/9000 (ClickHouse).
+- **Internal:** All inter-component communication stays within the cluster via ClusterIP services on ports 3000 (web), 5432 (PostgreSQL), 6379 (Valkey), and 8123/9000 (ClickHouse). If enabled, the optional SQL API uses a separate PostgreSQL-protocol service on its configured port.
 
 ### Cloud-Specific Notes
 

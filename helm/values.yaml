@@ -166,6 +166,12 @@ web:
   tolerations: []
   affinity: {}
 
+sqlApi:
+  enabled: false
+  port: 5432
+  username: ""
+  password: ""
+
 worker:
   replicas: 1
   dashboard:
