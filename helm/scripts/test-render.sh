@@ -6,6 +6,8 @@ cd "$ROOT_DIR"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
+TASK_LOCAL_VALUES_FILE="$TMP_DIR/values.local.yaml"
+: > "$TASK_LOCAL_VALUES_FILE"
 
 helm dependency update . >/dev/null
 
@@ -342,7 +344,7 @@ cat > "$TMP_DIR/task-aws-values.yaml" <<'YAML'
 ingress:
   enabled: true
 YAML
-helm template task-aws . -f values.yaml -f generated/values.local.yaml -f values.aws.yaml -f "$TMP_DIR/task-aws-values.yaml" > "$TMP_DIR/task-aws.yaml"
+helm template task-aws . -f values.yaml -f "$TASK_LOCAL_VALUES_FILE" -f values.aws.yaml -f "$TMP_DIR/task-aws-values.yaml" > "$TMP_DIR/task-aws.yaml"
 if ! rg -q "ingressClassName: \"alb\"" "$TMP_DIR/task-aws.yaml"; then
   echo "Expected ALB ingress class with task layering + aws overlay" >&2
   exit 1
@@ -352,7 +354,7 @@ if rg -q "ingressClassName: \"nginx\"" "$TMP_DIR/task-aws.yaml"; then
   exit 1
 fi
 
-helm template task-gcp . -f values.yaml -f generated/values.local.yaml -f values.gcp.yaml > "$TMP_DIR/task-gcp.yaml"
+helm template task-gcp . -f values.yaml -f "$TASK_LOCAL_VALUES_FILE" -f values.gcp.yaml > "$TMP_DIR/task-gcp.yaml"
 if ! rg -q "kubernetes.io/ingress.class: gce" "$TMP_DIR/task-gcp.yaml"; then
   echo "Expected GKE ingress annotation with task layering + gcp overlay" >&2
   exit 1
@@ -362,7 +364,7 @@ if rg -q "ingressClassName: \"nginx\"" "$TMP_DIR/task-gcp.yaml"; then
   exit 1
 fi
 
-helm template task-azure . -f values.yaml -f generated/values.local.yaml -f values.azure.yaml > "$TMP_DIR/task-azure.yaml"
+helm template task-azure . -f values.yaml -f "$TASK_LOCAL_VALUES_FILE" -f values.azure.yaml > "$TMP_DIR/task-azure.yaml"
 if ! rg -q "ingressClassName: \"webapprouting.kubernetes.azure.com\"" "$TMP_DIR/task-azure.yaml"; then
   echo "Expected AKS app-routing ingress class with task layering + azure overlay" >&2
   exit 1
