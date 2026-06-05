@@ -70,23 +70,6 @@ services:
       CLICKHOUSE_PORT: 9000
     command: ["sh", "/app/scripts/migrate-clickhouse.sh"]
 
-  cleanup-clickhouse-system-logs:
-    image: clickhouse/clickhouse-server:25.8.9.20
-    restart: "no"
-    depends_on:
-      clickhouse:
-        condition: service_healthy
-    env_file:
-      - ./.env
-    environment:
-      CLICKHOUSE_HOST: clickhouse
-      CLICKHOUSE_PORT: 9000
-      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
-      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
-    volumes:
-      - ../scripts/cleanup-clickhouse-system-logs.sh:/cleanup.sh:ro
-    command: ["sh", "/cleanup.sh"]
-
   web:
     image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:2705a2e}
     restart: unless-stopped

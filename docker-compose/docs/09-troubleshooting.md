@@ -93,21 +93,4 @@ docker exec -it <clickhouse-container> clickhouse-client \
   "
 ```
 
-To immediately free space by truncating system logs:
-
-```bash
-docker exec -it <clickhouse-container> clickhouse-client \
-  --user "${CLICKHOUSE_USER}" \
-  --password "${CLICKHOUSE_PASSWORD}" \
-  --multiquery --query "
-    TRUNCATE TABLE IF EXISTS system.trace_log;
-    TRUNCATE TABLE IF EXISTS system.text_log;
-    TRUNCATE TABLE IF EXISTS system.metric_log;
-    TRUNCATE TABLE IF EXISTS system.asynchronous_metric_log;
-    TRUNCATE TABLE IF EXISTS system.query_thread_log;
-    TRUNCATE TABLE IF EXISTS system.processors_profile_log;
-    TRUNCATE TABLE IF EXISTS system.query_log;
-  "
-```
-
 To adjust the TTL or disable `query_log` entirely, edit `config/clickhouse-logging.xml` and restart: `docker compose restart clickhouse`

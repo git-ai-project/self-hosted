@@ -50,6 +50,10 @@ if rg -q "SQL_API_PASSWORD" "$TMP_DIR/local.yaml"; then
   echo "Did not expect SQL API password in default render" >&2
   exit 1
 fi
+if rg -q "cleanup-ch-syslogs" "$TMP_DIR/local.yaml"; then
+  echo "Did not expect ClickHouse system log cleanup job in default render" >&2
+  exit 1
+fi
 
 cat > "$TMP_DIR/sql-api-values.yaml" <<'YAML'
 sqlApi:

@@ -116,23 +116,6 @@ kubectl exec -it "$POD" -n "${HELM_NAMESPACE:-git-ai}" -- clickhouse-client \
   "
 ```
 
-To immediately free space by truncating system logs:
-
-```bash
-kubectl exec -it "$POD" -n "${HELM_NAMESPACE:-git-ai}" -- clickhouse-client \
-  --user gitai \
-  --password "${CLICKHOUSE_PASSWORD}" \
-  --multiquery --query "
-    TRUNCATE TABLE IF EXISTS system.trace_log;
-    TRUNCATE TABLE IF EXISTS system.text_log;
-    TRUNCATE TABLE IF EXISTS system.metric_log;
-    TRUNCATE TABLE IF EXISTS system.asynchronous_metric_log;
-    TRUNCATE TABLE IF EXISTS system.query_thread_log;
-    TRUNCATE TABLE IF EXISTS system.processors_profile_log;
-    TRUNCATE TABLE IF EXISTS system.query_log;
-  "
-```
-
 To adjust settings:
 
 ```yaml
