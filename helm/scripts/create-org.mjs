@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 
-// --- KSUID generation (ported from npm `ksuid` package) ---
+// --- KSUID generation (ported from the published `ksuid` package) ---
 
 const BASE62_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const KSUID_EPOCH_MS = 14e11;
