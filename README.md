@@ -77,7 +77,7 @@ For production deployments using cloud object storage (S3, Azure Blob, or GCS), 
 
 - **Ingress:** Choose between nginx-based Ingress (with presets for AWS ALB, GCP GCE, and Azure app routing) or Istio Gateway/VirtualService. See `helm/docs/03-configuration.md` for details.
 - **TLS:** Terminate TLS at the ingress layer. The chart supports `ingress.tls` configuration for certificate secrets.
-- **Outbound access:** Application pods need HTTPS egress to your SCM provider (GitHub, GitLab, or Bitbucket) for webhook delivery and API calls.
+- **Outbound access:** Application pods need HTTPS egress to your SCM provider (GitHub, GitLab, Bitbucket, or Azure DevOps) for webhook delivery and API calls.
 - **Inbound access:** Your SCM provider must be able to reach the ingress endpoint at `global.webBaseUrl` to deliver webhooks.
 - **Internal:** All inter-component communication stays within the cluster via ClusterIP services on ports 3000 (web), 5432 (PostgreSQL), 6379 (Valkey), and 8123/9000 (ClickHouse). If enabled, the optional SQL API uses a separate PostgreSQL-protocol service on its configured port.
 

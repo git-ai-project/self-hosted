@@ -26,5 +26,14 @@
     "webhook_secret": "YOUR_BITBUCKET_WEBHOOK_SECRET",
     "client_id": "YOUR_BITBUCKET_CLIENT_ID",
     "client_secret": "YOUR_BITBUCKET_CLIENT_SECRET"
+  },
+  {
+    "provider": "azure-devops",
+    "domain": "dev.azure.com",
+    "slug": "azure-devops",
+    "app_id": "azure-devops",
+    "webhook_secret": "YOUR_AZURE_DEVOPS_WEBHOOK_SECRET",
+    "client_id": "YOUR_AZURE_DEVOPS_CLIENT_ID",
+    "client_secret": "YOUR_AZURE_DEVOPS_CLIENT_SECRET"
   }
 ]

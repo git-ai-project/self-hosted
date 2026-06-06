@@ -36,6 +36,7 @@ required_env=(
   WORKER_JWT_SECRET
   WEB_INTERNAL_API_KEY
   SCM_WEBHOOK_SECRET_KEY
+  WORKFLOW_SECRET_ENCRYPTION_KEY
   STORAGE_BACKEND
   LOCAL_STORAGE_PATH
   ANALYZE_BATCH_PROVIDER
@@ -69,7 +70,7 @@ if (!Array.isArray(parsed) || parsed.length === 0) {
   process.exit(1);
 }
 const required = ["provider", "domain", "slug", "app_id", "webhook_secret", "client_id", "client_secret"];
-const supportedProviders = new Set(["github", "gitlab", "bitbucket"]);
+const supportedProviders = new Set(["github", "gitlab", "bitbucket", "azure-devops"]);
 const seenSlugs = new Set();
 for (const [index, app] of parsed.entries()) {
   if (typeof app !== "object" || !app) {
@@ -84,7 +85,7 @@ for (const [index, app] of parsed.entries()) {
   }
   if (!supportedProviders.has(app.provider.trim().toLowerCase())) {
     console.error(
-      `SCM_APPS_CONFIG[${index}] has unsupported provider '${app.provider}'. Supported: github, gitlab, bitbucket`
+      `SCM_APPS_CONFIG[${index}] has unsupported provider '${app.provider}'. Supported: github, gitlab, bitbucket, azure-devops`
     );
     process.exit(1);
   }
@@ -94,6 +95,60 @@ for (const [index, app] of parsed.entries()) {
     process.exit(1);
   }
   seenSlugs.add(slug);
+}
+
+function isWorkflowSecretKey(value) {
+  if (/^[a-fA-F0-9]{64}$/.test(value)) {
+    return true;
+  }
+  try {
+    return Buffer.from(value, "base64").length === 32;
+  } catch {
+    return false;
+  }
+}
+
+const workflowSecretKey = (process.env.WORKFLOW_SECRET_ENCRYPTION_KEY || "").trim();
+if (!isWorkflowSecretKey(workflowSecretKey)) {
+  console.error(
+    "WORKFLOW_SECRET_ENCRYPTION_KEY must be 32 bytes (base64) or 64 hex characters"
+  );
+  process.exit(1);
+}
+
+const workflowSecretKeyId = (process.env.WORKFLOW_SECRET_ENCRYPTION_KEY_ID || "workflow-key-default").trim();
+if (!/^[A-Za-z0-9._-]{1,128}$/.test(workflowSecretKeyId)) {
+  console.error(
+    "WORKFLOW_SECRET_ENCRYPTION_KEY_ID must be 1-128 letters, numbers, dots, underscores, or hyphens"
+  );
+  process.exit(1);
+}
+
+const workflowPreviousKeysRaw = (process.env.WORKFLOW_SECRET_ENCRYPTION_KEYS || "").trim();
+if (workflowPreviousKeysRaw) {
+  let previousKeys;
+  try {
+    previousKeys = JSON.parse(workflowPreviousKeysRaw);
+  } catch (error) {
+    console.error(`WORKFLOW_SECRET_ENCRYPTION_KEYS is invalid JSON: ${error.message}`);
+    process.exit(1);
+  }
+  if (!previousKeys || typeof previousKeys !== "object" || Array.isArray(previousKeys)) {
+    console.error("WORKFLOW_SECRET_ENCRYPTION_KEYS must be a JSON object");
+    process.exit(1);
+  }
+  for (const [keyId, value] of Object.entries(previousKeys)) {
+    if (!/^[A-Za-z0-9._-]{1,128}$/.test(keyId)) {
+      console.error(`WORKFLOW_SECRET_ENCRYPTION_KEYS contains invalid key id '${keyId}'`);
+      process.exit(1);
+    }
+    if (typeof value !== "string" || !isWorkflowSecretKey(value.trim())) {
+      console.error(
+        `WORKFLOW_SECRET_ENCRYPTION_KEYS.${keyId} must be 32 bytes (base64) or 64 hex characters`
+      );
+      process.exit(1);
+    }
+  }
 }
 
 const analyzeProvider = (process.env.ANALYZE_BATCH_PROVIDER || "").trim().toLowerCase();

@@ -32,7 +32,7 @@ Only admin users are shown as eligible org owners. If you need to create an org
 for another user, promote them to admin first with `task admin:grant`.
 
 We recommend creating a single organization for your entire company. One org can
-connect multiple SCM providers (GitHub, GitLab, Bitbucket) and manage all
+connect multiple SCM providers (GitHub, GitLab, Bitbucket, Azure DevOps) and manage all
 repositories in one place. You can run this command again to create additional
 organizations if needed, but most deployments only need one.
 

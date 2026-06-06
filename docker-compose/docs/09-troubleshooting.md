@@ -10,9 +10,9 @@
 - Re-run `task scm:configure`
 - Ensure `generated/scm.env` contains one non-empty JSON array
 - Ensure at least one provider is configured
-- Ensure providers are only `github`, `gitlab`, or `bitbucket`
+- Ensure providers are only `github`, `gitlab`, `bitbucket`, or `azure-devops`
 - Ensure each SCM app slug is unique
-- If you only have one app for a provider, use the default slug: `github`, `gitlab`, or `bitbucket`
+- If you only have one app for a provider, use the default slug: `github`, `gitlab`, `bitbucket`, or `azure-devops`
 
 ## Analyze jobs failing immediately
 
@@ -30,12 +30,23 @@
 - For `azure`: set `AZURE_STORAGE_CONNECTION_STRING`.
 - For `gcp`: set `GCP_STORAGE_BUCKET` (or `WORKER_STORAGE_BUCKET_NAME`).
 
+## Workflow secrets cannot be saved or decrypted
+
+- Confirm `WORKFLOW_SECRET_ENCRYPTION_KEY` is set and is either a 32-byte
+  base64 value or 64 hex characters.
+- Keep the key stable across restarts and upgrades.
+- If you rotated the key, keep previous keys in
+  `WORKFLOW_SECRET_ENCRYPTION_KEYS` as a JSON object keyed by
+  `WORKFLOW_SECRET_ENCRYPTION_KEY_ID`.
+- Run `task doctor` after editing `.env`.
+
 ## OAuth callback mismatch
 
 - Check provider callback URL exactly matches `WEB_BASE_URL` paths:
   - GitHub: `/api/auth/callback/github`
   - GitLab: `/api/auth/callback/gitlab`
   - Bitbucket: `/api/auth/oauth2/callback/bitbucket`
+  - Azure DevOps: `/api/auth/callback/azure-devops`
 
 ## Webhooks not arriving
 

@@ -18,7 +18,7 @@ Migration scripts and SQL are embedded in the image under `/app/scripts` and `/a
 
 - Self-contained folder
 - Beginner-friendly setup
-- GitHub optional; at least one SCM required
+- GitHub optional; at least one SCM provider required
 - Automatic one-shot DB migrations on `docker compose up`
 
 ## Non-Goals

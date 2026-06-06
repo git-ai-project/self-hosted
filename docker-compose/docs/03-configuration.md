@@ -9,6 +9,9 @@
 - `WORKER_JWT_SECRET`: worker auth secret
 - `WEB_INTERNAL_API_KEY`: internal API auth key
 - `SCM_WEBHOOK_SECRET_KEY`: encryption key for stored webhook secrets
+- `WORKFLOW_SECRET_ENCRYPTION_KEY`: encryption key for workflow secrets,
+  notification targets, and workflow runtime API signing keys. Must be a
+  32-byte base64 value or 64 hex characters.
 - `DATABASE_URL`
 - `REDIS_URL`
 - `CLICKHOUSE_HTTP_URL`
@@ -21,9 +24,32 @@
 - `ANALYZE_BATCH_PROVIDER=local`
 - `STORAGE_BACKEND=local`
 - `LOCAL_STORAGE_PATH=/app/data/worker-storage`
+- `WORKFLOW_SECRET_ENCRYPTION_KEY_ID=workflow-key-default`
 - `BULLMQ_PREFIX={git-ai}`
 - `BULLMQ_DASHBOARD_ENABLED=true`
 - `BULLMQ_DASHBOARD_PORT=3001`
+
+## Workflow Secrets
+
+`task init` generates `WORKFLOW_SECRET_ENCRYPTION_KEY` if it is empty. Keep this
+key stable across restarts and image upgrades; changing it without retaining the
+old key prevents existing workflow secrets and runtime API signing keys from
+decrypting.
+
+For rotation:
+
+1. Move the old key into `WORKFLOW_SECRET_ENCRYPTION_KEYS` as a JSON object.
+2. Set a new `WORKFLOW_SECRET_ENCRYPTION_KEY_ID`.
+3. Set a new `WORKFLOW_SECRET_ENCRYPTION_KEY`.
+4. Restart web and worker.
+
+Example:
+
+```bash
+WORKFLOW_SECRET_ENCRYPTION_KEY_ID=workflow-key-2026-07
+WORKFLOW_SECRET_ENCRYPTION_KEY=<new-32-byte-base64-or-64-hex-key>
+WORKFLOW_SECRET_ENCRYPTION_KEYS='{"workflow-key-default":"<old-key>"}'
+```
 
 ## Email Delivery
 
@@ -111,8 +137,9 @@ Provider buttons on the sign-in page are config-driven:
 - GitHub button appears only if a GitHub app is configured.
 - GitLab button appears only if a GitLab app is configured.
 - Bitbucket button appears only if a Bitbucket app is configured.
+- Azure DevOps button appears only if an Azure DevOps app is configured.
 
 Slug guidance:
 
-- Default slugs: `github`, `gitlab`, `bitbucket`
+- Default slugs: `github`, `gitlab`, `bitbucket`, `azure-devops`
 - Change a slug only if you run multiple instances of the same provider

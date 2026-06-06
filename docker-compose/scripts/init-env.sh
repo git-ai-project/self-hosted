@@ -69,6 +69,8 @@ set_if_empty BETTER_AUTH_SECRET "$(rand_base64)"
 set_if_empty WORKER_JWT_SECRET "$(rand_hex64)"
 set_if_empty WEB_INTERNAL_API_KEY "$(rand_hex64)"
 set_if_empty SCM_WEBHOOK_SECRET_KEY "$(rand_hex64)"
+set_if_empty WORKFLOW_SECRET_ENCRYPTION_KEY "$(rand_hex64)"
+set_if_empty WORKFLOW_SECRET_ENCRYPTION_KEY_ID "workflow-key-default"
 
 echo "Initialized .env and generated defaults"
 echo "Next: run 'task scm:configure'"

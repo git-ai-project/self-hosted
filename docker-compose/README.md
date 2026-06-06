@@ -7,7 +7,7 @@ This package runs Git AI on a single machine with Docker Compose.
 1. Git clone this repository locally
 2. `task init`
 3. Edit `.env` (set at least `WEB_BASE_URL`, `BETTER_AUTH_URL`, `LICENSE_KEY`)
-4. `task scm:configure` (GitHub is optional; configure at least one SCM app)
+4. `task scm:configure` (GitHub is optional; configure at least one SCM app: GitHub, GitLab, Bitbucket, or Azure DevOps)
    Use the default slug for each provider unless you are configuring multiple instances of that provider.
 5. `task up`
 6. `task wait`
@@ -72,6 +72,7 @@ This removes the book demo / booking-gated onboarding screen for that org.
 - `docs/04-scm-github.md`
 - `docs/05-scm-gitlab.md`
 - `docs/06-scm-bitbucket.md`
+- `docs/scm-azure-devops.md`
 - `docs/07-admin-bootstrap.md`
 - `docs/08-operations.md`
 - `docs/09-troubleshooting.md`
