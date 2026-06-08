@@ -12,7 +12,7 @@ data:
   WEB_BASE_URL: {{ .Values.global.webBaseUrl | quote }}
   BETTER_AUTH_URL: {{ .Values.global.betterAuthUrl | quote }}
   WORKER_PUBLIC_BASE_URL: {{ .Values.global.workerPublicBaseUrl | quote }}
-  WEB_APP_INTERNAL_BASE_URL: {{ .Values.global.webAppInternalBaseUrl | quote }}
+  WEB_APP_INTERNAL_BASE_URL: {{ printf "http://%s-web:%v" (include "gitai.fullname" .) .Values.web.service.port | quote }}
   BULLMQ_PREFIX: {{ .Values.app.bullmqPrefix | quote }}
   ORG_SYNC_CRON_PATTERN: {{ .Values.worker.orgSync.cronPattern | quote }}
   ORG_SYNC_CRON_TZ: {{ .Values.worker.orgSync.cronTz | quote }}
