@@ -129,6 +129,7 @@ services:
       - ./generated/scm.env
     environment:
       BULLMQ_WORKER: "true"
+      WEB_APP_INTERNAL_BASE_URL: "http://web:3000"
       BULLMQ_DASHBOARD_ENABLED: ${BULLMQ_DASHBOARD_ENABLED:-true}
       BULLMQ_DASHBOARD_PORT: ${BULLMQ_DASHBOARD_PORT:-3001}
     depends_on:

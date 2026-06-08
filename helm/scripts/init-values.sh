@@ -37,7 +37,6 @@ global:
   webBaseUrl: http://git-ai.local
   betterAuthUrl: http://git-ai.local
   workerPublicBaseUrl: http://git-ai.local
-  webAppInternalBaseUrl: http://git-ai.local
 
 ingress:
   enabled: false
