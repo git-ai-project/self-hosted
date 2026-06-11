@@ -65,6 +65,37 @@ Validation rules:
 - `azure`: `storage.azure.connectionStringSecretKey` required
 - `gcp`: `storage.gcp.bucketName` required
 
+For production, prefer a cloud object storage backend such as `aws`, `azure`, or
+`gcp`. The `local` backend is best suited to single-node installs and POCs.
+
+When `storage.backend=local` uses the default `ReadWriteOnce` PVC on a
+multi-node cluster, both `web` and `worker` mount the same claim. A normal
+rolling update can leave replacement pods stuck if Kubernetes schedules them on
+a different node from the pod currently holding the volume.
+
+For local PVC POCs, keep `web.replicas=1` and `worker.replicas=1`, pin both
+Deployments to the same node, and use `Recreate` so old pods are terminated
+before replacements are created:
+
+```yaml
+web:
+  strategy:
+    type: Recreate
+    rollingUpdate: null
+  nodeSelector:
+    kubernetes.io/hostname: example-node
+
+worker:
+  strategy:
+    type: Recreate
+    rollingUpdate: null
+  nodeSelector:
+    kubernetes.io/hostname: example-node
+```
+
+Use a stable custom node label instead of `kubernetes.io/hostname` if nodes are
+replaced frequently, but make sure that label selects exactly one eligible node.
+
 Azure secret behavior:
 
 - chart-managed secret mode (`secrets.existingSecret=""`): set `storage.azure.connectionString`
