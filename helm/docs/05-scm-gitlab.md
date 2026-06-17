@@ -10,6 +10,13 @@ Webhooks for connected groups are created by Git AI automatically using:
 
 - `https://gitai.example.com/worker/scm-webhook/<gitlab-slug>?connection_token=<token>`
 
+If you use GitLab Community Edition, enable `SKIP_GITLAB_WEBHOOK_SETUP` because GitLab Community Edition does not support org-wide webhooks. In Helm, set:
+
+```yaml
+app:
+  skipGitLabWebhookSetup: true
+```
+
 Use the default slug `gitlab` unless you run multiple GitLab instances.
 
 ## Create GitLab OAuth App (Step by Step)
