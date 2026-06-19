@@ -1,6 +1,6 @@
 # Git AI Platform — Architecture, Authentication & Data Flow
 
-## 1. Architecture at a glance
+## 1. Architecture 
 
 ```mermaid
 flowchart LR
