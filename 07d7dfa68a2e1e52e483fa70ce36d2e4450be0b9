@@ -1,0 +1,32 @@
+helm/values.yaml
+  0d8a79cd7eadc6fa 157-159
+helm/templates/configmap.yaml
+  0d8a79cd7eadc6fa 17-18
+docker-compose/.env.example
+  0d8a79cd7eadc6fa 51-54
+docker-compose/docs/03-configuration.md
+  0d8a79cd7eadc6fa 28-34
+helm/docs/03-configuration.md
+  0d8a79cd7eadc6fa 101-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.3.0",
+  "base_commit_sha": "07d7dfa68a2e1e52e483fa70ce36d2e4450be0b9",
+  "prompts": {
+    "0d8a79cd7eadc6fa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1378167c-f1d0-47ea-b439-90d08b593ea3",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Sasha Varlamov",
+      "messages": [],
+      "total_additions": 23,
+      "total_deletions": 0,
+      "accepted_lines": 23,
+      "overriden_lines": 0,
+      "messages_url": "https://usegitai.com/cas/f560d854a7463bf4c7af3031625c59e98a52c7b970d8ee8bddf4bbdac9808013"
+    }
+  }
+}

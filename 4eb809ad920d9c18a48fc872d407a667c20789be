@@ -1,0 +1,16 @@
+docker-compose/docker-compose.yml
+  h_dac2ecdcedf37f 46,61,74,106
+helm/values.yaml
+  h_dac2ecdcedf37f 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.3.3",
+  "base_commit_sha": "4eb809ad920d9c18a48fc872d407a667c20789be",
+  "prompts": {},
+  "humans": {
+    "h_dac2ecdcedf37f": {
+      "author": "Sasha Varlamov"
+    }
+  }
+}

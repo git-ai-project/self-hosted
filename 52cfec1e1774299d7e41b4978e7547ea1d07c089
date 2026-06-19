@@ -1,0 +1,21 @@
+helm/docs/07-admin-bootstrap.md
+  s_f6c222a9026e3a::t_77e13919759f20 1,3-8,16,19-22,24-25,28-35,37-52,54-55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.3.3",
+  "base_commit_sha": "52cfec1e1774299d7e41b4978e7547ea1d07c089",
+  "prompts": {},
+  "sessions": {
+    "s_f6c222a9026e3a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "43e779cc-b529-48ed-b41f-5c17f4398543",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Sasha Varlamov",
+      "messages": [],
+      "messages_url": "https://usegitai.com/cas/7657f0e0accb5f494708c95509610605285c2ac1a83527a4ecbedb5ab9800dad"
+    }
+  }
+}
