@@ -1,11 +1,4 @@
-# Git AI — Architecture, Authentication & Data Flow
-
-> **Audience:** Cloud Security and Enterprise Architecture reviewers.
-> **Scope:** the **self-hosted** deployment of Git AI — every component runs inside your
-> own cloud/cluster. Written **provider-generically** (GitHub, GitLab, Bitbucket, Azure
-> DevOps); **GitHub** is used as the worked example.
-
----
+# Git AI Platform — Architecture, Authentication & Data Flow
 
 ## 1. Architecture at a glance
 
