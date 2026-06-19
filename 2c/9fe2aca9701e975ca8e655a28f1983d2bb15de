@@ -1,0 +1,37 @@
+docs/architecture-and-security.md
+  s_51256d484ace03::t_214a8cf3c50b4c 154
+  s_51256d484ace03::t_11b252d68da9fc 155-157
+  s_51256d484ace03::t_5ae4b574d3e696 109
+  s_51256d484ace03::t_58a0bacedc3e3d 299,301-302
+  s_51256d484ace03::t_9830a194d4b49d 89
+  s_51256d484ace03::t_53cb6b8ba9d4ca 166-169
+  s_51256d484ace03::t_34a1fb8d18d662 128
+  s_51256d484ace03::t_f096ffb127359e 70
+  s_51256d484ace03::t_5339931810e98d 68
+  s_51256d484ace03::t_b137176dbcf171 90
+  s_51256d484ace03::t_31b8eaf87811df 123
+  s_51256d484ace03::t_5d22b3d5b2a408 95,97-98
+  s_51256d484ace03::t_2246a0987baf13 127
+  s_51256d484ace03::t_4c64b69269f98b 69
+  s_51256d484ace03::t_dbf6fe1fbf0d55 82-86
+  s_51256d484ace03::t_009814fd99e571 94,100,102-105
+  s_51256d484ace03::t_59e2023630a890 277-280
+  s_51256d484ace03::t_20e95e33db968e 140-142,144-153
+  s_51256d484ace03::t_d82fbb4a176aa4 122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "2c9fe2aca9701e975ca8e655a28f1983d2bb15de",
+  "prompts": {},
+  "sessions": {
+    "s_51256d484ace03": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4be18e5d-8df2-4ce0-9ac1-bda558ad9498",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Aidan Cunniffe <acunniffe@gmail.com>"
+    }
+  }
+}
