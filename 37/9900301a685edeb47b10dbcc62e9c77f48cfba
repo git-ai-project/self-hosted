@@ -1,0 +1,19 @@
+docs/architecture-and-security.md
+  s_51256d484ace03::t_50057cf972dd96 75-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "379900301a685edeb47b10dbcc62e9c77f48cfba",
+  "prompts": {},
+  "sessions": {
+    "s_51256d484ace03": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4be18e5d-8df2-4ce0-9ac1-bda558ad9498",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Aidan Cunniffe <acunniffe@gmail.com>"
+    }
+  }
+}
