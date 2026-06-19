@@ -3,7 +3,7 @@
 > **Audience:** Cloud Security and Enterprise Architecture reviewers.
 > **Scope:** the **self-hosted** deployment of Git AI — every component runs inside your
 > own cloud/cluster. Written **provider-generically** (GitHub, GitLab, Bitbucket, Azure
-> DevOps); **Azure DevOps (ADO)** is used as the worked example.
+> DevOps); **GitHub** is used as the worked example.
 
 ---
 
@@ -11,7 +11,7 @@
 
 ```mermaid
 flowchart LR
-  subgraph DEV["Developer machine / CI&nbsp;&nbsp;(untrusted)"]
+  subgraph DEV["Developer Endpoint"]
     CLI["git-ai CLI plugin"]
     LREPO[("local git repo<br/>refs/notes/ai")]
     CLI --- LREPO
@@ -19,6 +19,7 @@ flowchart LR
 
   subgraph CLUSTER["Your cloud / cluster&nbsp;&nbsp;(your security boundary)"]
     direction TB
+    STE["Secure Telemetry Endpoint<br/>/worker/metrics/upload<br/>TLS · Telemetry Write key · write-only"]
     WEB["web<br/>API · UI · webhook receiver · auth"]
     WORK["worker<br/>BullMQ jobs · PR sync · ingest"]
     PG[("PostgreSQL<br/>users · orgs · SCM tokens · notes*")]
@@ -30,23 +31,23 @@ flowchart LR
   end
 
   subgraph EXT["External (your tenants)"]
-    SCM["SCM provider<br/>ADO / GitHub / GitLab / Bitbucket"]
-    IDP["Identity provider<br/>Entra ID (ADO)"]
+    SCM["SCM provider<br/>GitHub / GitLab / Bitbucket / ADO"]
+    IDP["Identity provider"]
   end
 
-  CLI -- "①&nbsp;login: OAuth device flow → JWT" --> WEB
-  CLI -- "②&nbsp;telemetry upload (internet-exposed)<br/>Client Telemetry Write key" --> WEB
-  CLI -- "③&nbsp;notes push refs/notes/ai (git_notes)<br/>or notes upload (http)" --> SCM
-  SCM -- "④&nbsp;webhooks (HMAC-signed)" --> WEB
-  WORK -- "⑤&nbsp;REST: PRs · commits · status · notes<br/>scoped OAuth/app token" --> SCM
-  WEB -- "⑥&nbsp;OAuth token refresh" --> IDP
+  CLI -- "①&nbsp;telemetry upload (internet-exposed)<br/>Client Telemetry Write key" --> STE
+  STE -- "validated telemetry" --> WEB
+  CLI -- "②&nbsp;notes push refs/notes/ai (git_notes)<br/>or notes upload (http)" --> SCM
+  SCM -- "③&nbsp;webhooks (HMAC-signed)" --> WEB
+  WORK -- "④&nbsp;REST: PRs · commits · status · notes<br/>scoped app/OAuth token" --> SCM
+  WEB -- "⑤&nbsp;App / OAuth token mint + refresh" --> IDP
 
   classDef boundary fill:none,stroke-dasharray:4 3;
   class DEV,CLUSTER,EXT boundary;
 ```
 
 `notes*` lives in PostgreSQL only in `http` notes mode; in the default `git_notes` mode
-the notes of record live in your SCM repo. The circled edges ①–⑥ are the trust points
+the notes of record live in your SCM repo. The circled edges ①–⑤ are the trust points
 enumerated in [§4](#4-trust-points).
 
 **Deployment:** one container image (`ghcr.io/git-ai-project/git-ai-web-ee`) runs in two
@@ -66,7 +67,7 @@ levels, and storage:
 | --- | --- | --- | --- | --- |
 | **Client telemetry** | `git-ai` CLI on developer laptops / CI | `POST /worker/metrics/upload` (internet-exposed) | ClickHouse (+ Postgres aggregates) | Usage/session metrics & authorship summaries; written with a least-privilege **Telemetry Write** key |
 | **Git notes (authorship)** | `git-ai` CLI, per commit | `git_notes` mode: pushed into SCM as `refs/notes/ai`, backend fetches it. `http` mode: `POST /worker/notes/upload` | `git_notes`: **your SCM repo**. `http`: Postgres `note` table | The authorship record itself (human/AI per line). In default mode it never leaves your SCM |
-| **SCM metadata** | SCM provider (ADO/GitHub/…) | Webhooks (`/worker/scm-webhook/{slug}`) + worker REST pulls | Postgres (PRs, commits, contributors), ClickHouse (events) | PR/commit/identity metadata; fetched with scoped OAuth/app tokens |
+| **SCM metadata** | SCM provider (GitHub/GitLab/…) | Webhooks (`/worker/scm-webhook/{slug}`) + worker REST pulls | Postgres (PRs, commits, contributors), ClickHouse (events) | PR/commit/identity metadata; fetched with scoped app/OAuth tokens |
 
 Derived from these: analytics over sessions, contributors, and PR rollups (ClickHouse +
 Postgres). Source code itself is **not** stored — the worker reads repos transiently
@@ -78,39 +79,32 @@ during sync and discards the working copy.
 
 ### 3.1 Client (CLI) → backend
 
-| Mechanism | Purpose | Detail |
-| --- | --- | --- |
-| **OAuth 2.0 Device Authorization flow** | Interactive CLI login | `POST /worker/oauth/device/code` → user approves in browser → `POST /worker/oauth/token` (`client_id=git-ai-cli`) |
-| **JWT access token** | Authenticated API calls | HS256, signed with `WORKER_JWT_SECRET`; ~1h lifetime; `Authorization: Bearer` |
-| **Refresh token** | Renew access token | ~90d; rotated on use; `grant_type=refresh_token` |
-| **Install nonce** | First-install bootstrap | One-time, ~5m |
-| **API keys (scoped)** | Machine-to-machine (CI, telemetry, notes) | `x-api-key`; per-org; least-privilege scopes (below) |
+The CLI authenticates to the backend with **scoped, per-organization API keys** sent in
+the `x-api-key` header. Keys are issued from the dashboard, stored hashed server-side, and
+revoked/recreated by an org admin (no automatic expiry).
 
-**Token lifecycle / rotation:**
+| Scope | Used for |
+| --- | --- |
+| `telemetry.write` | Upload usage/session telemetry — **write-only, cannot read any org data** |
+| `notes.write` / `notes.read` | Upload / read authorship notes (`http` notes mode) |
+| `pr.write` | Post PR comments / description footers |
+| `admin.read` / `admin.write` | Org administration (not used by the CLI on developer machines) |
 
-| Token | Lifetime | Storage | Rotation |
-| --- | --- | --- | --- |
-| Access (JWT) | ~1 h | CLI-side, transient | Re-minted via refresh token |
-| Refresh | ~90 d | CLI-side | Rotated on each use |
-| Device code | ~15 min | Server-side, one-time | Expires / consumed |
-| Install nonce | ~5 min | Server-side, one-time | Expires / consumed |
-| API key | Until revoked | Hash stored server-side; created in UI | Manual revoke / recreate |
-
-**API-key scopes** (least privilege; verified in `web/lib/auth/api-key-permissions.ts`):
-`telemetry.write`, `notes.read`, `notes.write`, `pr.write`, `admin.read`, `admin.write`.
-The CLI/CI uses the narrowest scope for the job — e.g. telemetry upload uses
-`telemetry.write` only, which **cannot read** any organization data.
+Each integration uses the **narrowest scope** for its job — e.g. a developer laptop pushing
+telemetry holds only a `telemetry.write` key, which cannot read notes, org data, or reach
+admin APIs. Scopes are verified in `web/lib/auth/api-key-permissions.ts`.
 
 ### 3.2 Backend → SCM provider
 
-Per-provider app credentials are supplied via **`SCM_APPS_CONFIG`** (`client_id`,
-`client_secret`, `webhook_secret`, `private_key`/PAT, and for ADO a `tenant_id`). Per-org
-tokens are stored in the Postgres `account` table and **auto-refreshed** before use.
+Per-provider app credentials are supplied via **`SCM_APPS_CONFIG`** (`app_id`,
+`client_id`, `client_secret`, `webhook_secret`, `private_key`/PAT, and for ADO a
+`tenant_id`). Per-org tokens are stored in the Postgres `account` table and
+**auto-refreshed** before use.
 
-| Provider | Backend → provider auth | Token refresh endpoint |
+| Provider | Backend → provider auth | Token endpoint |
 | --- | --- | --- |
-| **Azure DevOps** | OAuth via **Microsoft Entra ID** (optional PAT fallback) | `https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token` |
-| GitHub | GitHub **App installation tokens** (short-lived, re-minted) | n/a (re-issued per request) |
+| **GitHub** | GitHub **App installation tokens** — backend signs an App JWT with the App private key, exchanges it for a short-lived (~1h) installation token scoped to the install | `api.github.com` (re-minted per use; no refresh token) |
+| Azure DevOps | OAuth via **Microsoft Entra ID** (optional PAT fallback) | `https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token` |
 | GitLab | OAuth token / PAT (`PRIVATE-TOKEN`) | `https://{domain}/oauth/token` |
 | Bitbucket | OAuth (Basic `client_id:secret`) / app password | `https://bitbucket.org/site/oauth2/access_token` |
 
@@ -118,7 +112,7 @@ tokens are stored in the Postgres `account` table and **auto-refreshed** before 
 
 - **Web UI:** Better Auth session cookies (sessions in Postgres); tRPC `protectedProcedure`.
 - **Internal system-to-system:** `WEB_INTERNAL_API_KEY` (constant-time comparison).
-- **Webhooks:** HMAC signature verification (see §4, edge ④).
+- **Webhooks:** HMAC signature verification (see §4, edge ③).
 
 ---
 
@@ -129,17 +123,16 @@ numbers match the diagram in §1.
 
 | # | From → To | What crosses | Control / defense |
 | --- | --- | --- | --- |
-| **①** | Developer CLI → backend (login) | Device-flow login; thereafter JWT | OAuth 2.0 device flow; HS256 JWT signed with `WORKER_JWT_SECRET`; ~1h access / ~90d rotating refresh |
-| **②** | Developer laptop → **metrics ingestion endpoint** | Usage/session telemetry | **Internet-exposed by design** (devs/CI push from anywhere). **Defense in depth:** TLS-only, authenticated endpoint requiring an org-scoped **Client Telemetry Write key** (`telemetry.write`) that is **write-only and cannot read any data**, plus a resolved author-identity header. Compromise of the key yields telemetry-write only — no read, no notes, no admin |
-| **③** | CLI / CI → SCM repo (notes) | `git_notes`: push `refs/notes/ai`. `http`: `POST /worker/notes/upload` | `git_notes`: the **SCM's own** git auth (developer/CI credentials) — Git AI is not in the path. `http`: org-scoped `notes.write` API key, server-side content validation, upsert keyed `(orgId, commitSha)` |
-| **④** | SCM → backend (webhooks) | PR / push events | **HMAC signature verification** (`timingSafeEqual`) against `SCM_WEBHOOK_SECRET_KEY` / per-app `webhook_secret`; delivery-id dedupe. Provider headers: `x-hub-signature-256` (GitHub), `x-gitlab-token`, `x-request-signature` (Bitbucket), `x-azure-devops-secret` (ADO) |
-| **⑤** | Worker → SCM (REST) | Fetch PRs/commits/notes, post comments & status | Per-org **OAuth / app token**, **least-privilege scopes** (§5), auto-refreshed; TLS-only egress. ADO uses Entra ID delegated scopes — `vso.code_write` only where notes must be written |
-| **⑥** | Backend → Identity provider | OAuth token refresh | OAuth client credentials (`client_id`/`client_secret`) over TLS to the IdP token endpoint; refresh tokens stored encrypted-at-rest in Postgres |
-| **⑦** | Browser → web UI | Operator/admin sessions | Better Auth session cookies; org-membership authorization on every route |
-| **⑧** | web ↔ worker / internal triggers | System-to-system calls | `WEB_INTERNAL_API_KEY`, constant-time comparison; not internet-exposed |
-| **⑨** | Backend → datastores | Postgres / ClickHouse / Valkey / object storage | In-cluster `ClusterIP` (or private managed endpoints); credentialed; TLS where supported; not internet-exposed |
+| **①** | Developer laptop → **metrics ingestion endpoint** | Usage/session telemetry | **Internet-exposed by design** (devs/CI push from anywhere). **Defense in depth:** TLS-only, authenticated endpoint requiring an org-scoped **Client Telemetry Write key** (`telemetry.write`) that is **write-only and cannot read any data**, plus a resolved author-identity header. Compromise of the key yields telemetry-write only — no read, no notes, no admin |
+| **②** | CLI / CI → SCM repo (notes) | `git_notes`: push `refs/notes/ai`. `http`: `POST /worker/notes/upload` | `git_notes`: the **SCM's own** git auth (developer/CI credentials) — Git AI is not in the path. `http`: org-scoped `notes.write` API key, server-side content validation, upsert keyed `(orgId, commitSha)` |
+| **③** | SCM → backend (webhooks) | PR / push events | **HMAC signature verification** (`timingSafeEqual`) against `SCM_WEBHOOK_SECRET_KEY` / per-app `webhook_secret`; delivery-id dedupe. Provider headers: `x-hub-signature-256` (GitHub), `x-gitlab-token`, `x-request-signature` (Bitbucket), `x-azure-devops-secret` (ADO) |
+| **④** | Worker → SCM (REST) | Fetch PRs/commits/notes, post comments & status | Per-org **app / OAuth token**, **least-privilege permissions** (§5), auto-refreshed; TLS-only egress. GitHub uses a short-lived installation token scoped to the App's granted permissions — write capability only where notes must be pushed |
+| **⑤** | Backend → identity provider | App / OAuth token mint + refresh | GitHub: App JWT (signed with App private key) exchanged for an installation token at `api.github.com`. OAuth providers (ADO/GitLab/Bitbucket): `client_id`/`client_secret` over TLS to the token endpoint; refresh tokens stored encrypted-at-rest in Postgres |
+| **⑥** | Browser → web UI | Operator/admin sessions | Better Auth session cookies; org-membership authorization on every route |
+| **⑦** | web ↔ worker / internal triggers | System-to-system calls | `WEB_INTERNAL_API_KEY`, constant-time comparison; not internet-exposed |
+| **⑧** | Backend → datastores | Postgres / ClickHouse / Valkey / object storage | In-cluster `ClusterIP` (or private managed endpoints); credentialed; TLS where supported; not internet-exposed |
 
-> **Highlight — metrics ingestion (edge ②).** This is the one backend endpoint a developer
+> **Highlight — metrics ingestion (edge ①).** This is the one backend endpoint a developer
 > laptop reaches directly over the internet. It is hardened by least privilege rather than
 > network reachability alone: the only credential a laptop holds is a **write-only
 > telemetry key**. It cannot read org data, cannot touch notes, cannot reach admin APIs,
@@ -149,23 +142,24 @@ numbers match the diagram in §1.
 
 ## 5. Required SCM scopes (least privilege)
 
-**Azure DevOps** (Entra ID delegated — verified in `web/lib/scm/azure-devops/oauth.ts`):
+**GitHub App permissions** (granted once when the App is installed on the org/repos):
 
-| Scope | Why |
+| Permission | Why |
 | --- | --- |
-| `vso.code_write` | Read repos; push `refs/notes/ai` (only needed in `git_notes` mode) |
-| `vso.code_status` | Post commit status / checks on PRs |
-| `vso.identity`, `vso.graph` | Resolve users / org membership for attribution |
-| `vso.profile`, `vso.project` | User profile & project metadata |
-| `vso.work` | Work-item context (minimal use) |
-| `openid`, `profile`, `email`, `offline_access` | OIDC sign-in + refresh tokens |
+| Contents — Read & write | Read repos; push `refs/notes/ai` (write only needed in `git_notes` mode) |
+| Commit statuses — Read & write | Post commit status / checks on PRs |
+| Pull requests — Read & write | Post PR comments / description footers |
+| Metadata — Read | Resolve repo/identity metadata for attribution |
+| Webhook events | Subscribe to PR + push events |
 
-**GitHub App:** Contents R/W (notes), Commit statuses R/W, Pull requests R/W, webhook
-subscriptions. **GitLab:** `api`, `read_user`. **Bitbucket:** `account`, `repository`,
-`webhook`.
+**Other providers:** **Azure DevOps** (Entra ID delegated) — `vso.code_write`,
+`vso.code_status`, `vso.identity`, `vso.graph`, `vso.profile`, `vso.project`, `vso.work`,
+plus `openid`/`profile`/`email`/`offline_access` (verified in
+`web/lib/scm/azure-devops/oauth.ts`). **GitLab** — `api`, `read_user`.
+**Bitbucket** — `account`, `repository`, `webhook`.
 
-> In `http` notes mode, write-to-repo capability (e.g. ADO `vso.code_write` for pushing
-> notes) is not required; read access still is, for PR sync.
+> In `http` notes mode, write-to-repo capability (GitHub Contents: write / ADO
+> `vso.code_write`) is not required for note storage; read access still is, for PR sync.
 
 ---
 
@@ -185,34 +179,13 @@ Controlled per organization by `organization.notesBackend` (`web/lib/notes/read.
 
 ## 7. Sequence diagrams
 
-### 7.1 CLI login (device flow) + refresh
-
-```mermaid
-sequenceDiagram
-  participant Dev as Developer
-  participant CLI as git-ai CLI
-  participant WEB as Backend (web)
-  CLI->>WEB: POST /worker/oauth/device/code (client_id=git-ai-cli)
-  WEB-->>CLI: device_code, user_code, verification_uri, interval, expires_in(15m)
-  CLI-->>Dev: open verification_uri, enter user_code
-  Dev->>WEB: browser login + approve
-  loop until approved
-    CLI->>WEB: POST /worker/oauth/token (grant=device_code)
-    WEB-->>CLI: authorization_pending / slow_down
-  end
-  WEB-->>CLI: access_token (JWT ~1h) + refresh_token (~90d)
-  Note over CLI: on expiry
-  CLI->>WEB: POST /worker/oauth/token (grant=refresh_token)
-  WEB-->>CLI: new access_token (+ rotated refresh_token)
-```
-
-### 7.2 Authorship → notes write (both modes)
+### 7.1 Authorship → notes write (both modes)
 
 ```mermaid
 sequenceDiagram
   participant CLI as git-ai CLI
   participant REPO as Local git repo
-  participant SCM as SCM repo (e.g. ADO)
+  participant SCM as SCM repo (e.g. GitHub)
   participant WEB as Backend
   CLI->>REPO: write authorship to refs/notes/ai
   alt notesBackend = git_notes (default)
@@ -224,7 +197,7 @@ sequenceDiagram
   end
 ```
 
-### 7.3 PR sync (webhook-driven)
+### 7.2 PR sync (webhook-driven)
 
 ```mermaid
 sequenceDiagram
@@ -261,7 +234,6 @@ your own vault / external-secrets operator). Core secrets
 | Secret | Purpose |
 | --- | --- |
 | `betterAuthSecret` | Web session/auth signing |
-| `workerJwtSecret` | Sign/verify CLI JWTs |
 | `webInternalApiKey` | Internal system-to-system auth |
 | `scmWebhookSecretKey` | Verify inbound webhook signatures |
 | `SCM_APPS_CONFIG` | Per-provider OAuth/app credentials (incl. ADO `tenant_id`) |
@@ -279,16 +251,16 @@ automatic secret rotation is built in.
 | Path | Port | Source | Control |
 | --- | --- | --- | --- |
 | Web/API + UI | 443 → 3000 | Developers, CI, browsers | TLS at ingress (nginx / Istio) |
-| Telemetry ingest (`/worker/metrics/upload`) | 443 → 3000 | Developer laptops / CI | Telemetry Write key (edge ②) |
-| SCM webhooks (`/worker/scm-webhook/{slug}`) | 443 → 3000 | SCM provider | HMAC-verified (edge ④) |
+| Telemetry ingest (`/worker/metrics/upload`) | 443 → 3000 | Developer laptops / CI | Telemetry Write key (edge ①) |
+| SCM webhooks (`/worker/scm-webhook/{slug}`) | 443 → 3000 | SCM provider | HMAC-verified (edge ③) |
 | Worker dashboard | 3001 | Internal only | Not publicly exposed |
 
 **Outbound (egress allowlist):**
 
 | Destination | Purpose |
 | --- | --- |
-| SCM REST APIs — `dev.azure.com`, `api.github.com`, GitLab host, `api.bitbucket.org` | PR sync, comments, status, notes |
-| IdP token endpoints — `login.microsoftonline.com` (ADO) / provider OAuth | Token refresh |
+| SCM REST APIs — `api.github.com` (+ `github.com`), GitLab host, `api.bitbucket.org`, `dev.azure.com` | PR sync, comments, status, notes |
+| App/OAuth token endpoints — `api.github.com` (GitHub App token mint), `login.microsoftonline.com` (ADO) / provider OAuth | Token mint + refresh |
 | Object storage endpoint (if S3 / Azure Blob / GCS) | Worker artifacts |
 | Email provider (optional) — Resend / SMTP relay | Notifications |
 
@@ -313,24 +285,23 @@ required; the only external dependency is the container image pull from `ghcr.io
 | Name | Description |
 | --- | --- |
 | `BETTER_AUTH_SECRET` | Web auth/session signing |
-| `WORKER_JWT_SECRET` | Signs/verifies CLI JWTs |
 | `WEB_INTERNAL_API_KEY` | Internal system-to-system auth |
 | `SCM_WEBHOOK_SECRET_KEY` | Webhook HMAC verification |
 | `SCM_APPS_CONFIG` | Per-provider app credentials (incl. ADO `tenant_id`) |
 | `DATABASE_URL` / `REDIS_URL` / `CLICKHOUSE_*` | Datastore connections |
-| `WEB_BASE_URL` / `BETTER_AUTH_URL` / `WORKER_PUBLIC_BASE_URL` | Public URLs + OAuth callbacks |
+| `WEB_BASE_URL` / `BETTER_AUTH_URL` / `WORKER_PUBLIC_BASE_URL` | Public URLs + SCM OAuth callbacks |
 | `STORAGE_BACKEND` (+ bucket/connection vars) | `local` / `aws` / `azure` / `gcp` |
 | `LICENSE_KEY` | Enterprise license |
 
-> **CLI-side credential storage** (where the `git-ai` CLI persists its tokens on a
+> **CLI-side credential storage** (where the `git-ai` CLI persists its API key on a
 > developer machine) is defined in the CLI source repo
 > (`github.com/git-ai-project/git-ai`) and should be confirmed there; the backend only
 > observes the credential presented on each request.
 
 ### Source references
 
-- CLI auth / tokens: `web/lib/worker-oauth/service.ts`, `web/lib/worker-auth.ts`, `web/app/worker/oauth/**`
-- Telemetry endpoint & scopes: `web/app/worker/metrics/upload/route.ts`, `web/lib/auth/api-key-permissions.ts`
+- Client API keys & scopes: `web/lib/auth/api-key-permissions.ts`, `web/lib/auth/api-key-request-utils.ts`
+- Telemetry endpoint: `web/app/worker/metrics/upload/route.ts`
 - Notes storage & API: `web/lib/notes/read.ts`, `web/app/worker/notes/**`
 - ADO OAuth & scopes: `web/lib/scm/azure-devops/oauth.ts`
 - Webhooks & SCM config: `web/app/worker/scm-webhook/[slug]/route.ts`, `web/lib/scm/config.ts`
