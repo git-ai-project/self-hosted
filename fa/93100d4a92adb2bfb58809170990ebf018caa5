@@ -1,0 +1,23 @@
+docs/architecture-and-security.md
+  s_51256d484ace03::t_655dc218957733 3-5
+  s_51256d484ace03::t_4afaf58ee56872 141-145,149
+  s_51256d484ace03::t_98a062a70453a0 146-148
+  s_51256d484ace03::t_5a5939ecf6ab2f 159
+  s_51256d484ace03::t_1e25335cfca796 54-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "fa93100d4a92adb2bfb58809170990ebf018caa5",
+  "prompts": {},
+  "sessions": {
+    "s_51256d484ace03": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4be18e5d-8df2-4ce0-9ac1-bda558ad9498",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Aidan Cunniffe <acunniffe@gmail.com>"
+    }
+  }
+}
