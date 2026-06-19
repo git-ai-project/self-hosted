@@ -72,8 +72,8 @@ flowchart TB
     SEC -. "env" .-> WORKSVC
   end
 
-  WORKSVC -->|"HTTPS 443 egress"| SCM["SCM REST APIs"]
-  WEBSVC -->|"HTTPS 443 egress"| IDP["Identity provider /<br/>token endpoints"]
+  WORKSVC -->|"HTTPS 443 egress"| SCM["SCM provider<br/>REST APIs + identity provider"]
+  WEBSVC -->|"HTTPS 443 egress"| SCM
 
   classDef boundary fill:none,stroke-dasharray:4 3;
   class K8S boundary;
