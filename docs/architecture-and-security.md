@@ -1,6 +1,8 @@
 # Git AI Platform — Architecture, Authentication & Data Flow
 
-## 1. Architecture 
+## 1. Architecture
+
+### 1.1 Logical view
 
 ```mermaid
 flowchart LR
@@ -48,6 +50,39 @@ roles — **web** (port 3000) and **worker** (`BULLMQ_WORKER=true`, dashboard 30
 Kubernetes via the Helm chart (AKS/EKS/GKE) or on a single node via Docker Compose.
 Datastores are in-cluster (Bitnami PostgreSQL/Valkey, ClickHouse StatefulSet) or external
 managed services. Only **web** is exposed via ingress; everything else is internal.
+
+### 1.2 Physical / deployment view
+
+```mermaid
+flowchart TB
+  USERS["Developers / CI / Browsers"] -->|"HTTPS 443"| ING["Ingress<br/>nginx or Istio gateway"]
+
+  subgraph K8S["Kubernetes cluster — AKS / EKS / GKE (Helm chart)"]
+    ING --> WEBSVC["web Deployment<br/>Service :3000"]
+    WORKSVC["worker Deployment<br/>dashboard :3001 (internal)"]
+    WEBSVC --- PG[("PostgreSQL<br/>StatefulSet or managed · :5432")]
+    WEBSVC --- VK[("Valkey / Redis<br/>:6379")]
+    WEBSVC --- CH[("ClickHouse<br/>:8123 / :9000")]
+    WORKSVC --- PG
+    WORKSVC --- VK
+    WORKSVC --- CH
+    WORKSVC --- STORE[("Object storage<br/>local PVC or S3 / Azure Blob / GCS")]
+    SEC["Secret<br/>k8s Secret or existingSecret (your vault)"]
+    SEC -. "env" .-> WEBSVC
+    SEC -. "env" .-> WORKSVC
+  end
+
+  WORKSVC -->|"HTTPS 443 egress"| SCM["SCM REST APIs"]
+  WEBSVC -->|"HTTPS 443 egress"| IDP["Identity provider /<br/>token endpoints"]
+
+  classDef boundary fill:none,stroke-dasharray:4 3;
+  class K8S boundary;
+```
+
+In-cluster datastores can be swapped for managed equivalents (e.g. Azure Database for
+PostgreSQL, ElastiCache/Memorystore, ClickHouse Cloud) and object storage for a cloud
+bucket. A single-node **Docker Compose** topology is also supported, with the same
+components as containers on one host.
 
 ---
 
@@ -103,6 +138,15 @@ the Postgres `account` table and auto-refreshes / re-mints before use.
 - **Internal system-to-system:** `WEB_INTERNAL_API_KEY` (constant-time comparison).
 - **Webhooks:** HMAC signature verification (see §4, edge ③).
 
+### 3.4 Identity & authorization
+
+Authorization is governed by **organization membership** — every credential (API key or UI
+session) is bound to an organization, and every route enforces that the caller belongs to
+the org it is acting on. Data is isolated per org; a `telemetry.write` key can only write
+into its own org. The developer's git email is used **only for attribution** — mapping
+activity to a person via author profiles — and is never trusted for authorization, so a
+spoofed identity can at most misattribute within the same org.
+
 ---
 
 ## 4. Trust points
@@ -112,7 +156,7 @@ numbers match the diagram in §1.
 
 | # | From → To | What crosses | Control / defense |
 | --- | --- | --- | --- |
-| **①** | Developer laptop → **metrics ingestion endpoint** | Usage/session telemetry | **Internet-exposed by design** (devs/CI push from anywhere). **Defense in depth:** TLS-only, authenticated endpoint requiring an org-scoped **Client Telemetry Write key** (`telemetry.write`) that is **write-only and cannot read any data**, plus a resolved author-identity header. Similar to how OTEL collector configurations let clients write but not read data, the key grants telemetry-write only |
+| **①** | Developer laptop → **metrics ingestion endpoint** | Usage/session telemetry | **Internet-exposed by design** (devs/CI push from anywhere). **Defense in depth:** TLS-only, authenticated endpoint requiring an org-scoped **Client Telemetry Write key** (`telemetry.write`) that is **write-only and cannot read any data**. Similar to how OTEL collector configurations let clients write but not read data, the key grants telemetry-write only |
 | **②** | CLI → SCM (writing notes) | Push `refs/notes/ai` into the repo | Uses the **SCM's own permissions** (GitHub / GitLab / Bitbucket / ADO) — developers write notes refs into the repo with their existing git credentials; Git AI is not in the path |
 | **③** | SCM → backend (webhooks) | PR / push events | **HMAC signature verification** (`timingSafeEqual`) against `SCM_WEBHOOK_SECRET_KEY` / per-app `webhook_secret`; delivery-id dedupe. Provider headers: `x-hub-signature-256` (GitHub), `x-gitlab-token`, `x-request-signature` (Bitbucket), `x-azure-devops-secret` (ADO) |
 | **④** | Worker → SCM (REST) | Fetch PRs/commits/notes, post comments & status | Per-org **app / OAuth token**, **least-privilege permissions** (§5), auto-refreshed; TLS-only egress. GitHub uses a short-lived installation token scoped to the App's granted permissions — write capability only where notes must be pushed |
