@@ -1,0 +1,14 @@
+docs/architecture-and-security.md
+  h_ea2010baa7a42b 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "653406b454ff9ca03b34b4767a13ac31aeddaa96",
+  "prompts": {},
+  "humans": {
+    "h_ea2010baa7a42b": {
+      "author": "Aidan Cunniffe <acunniffe@gmail.com>"
+    }
+  }
+}
