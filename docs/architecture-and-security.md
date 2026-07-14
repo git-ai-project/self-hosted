@@ -336,4 +336,4 @@ required; the only external dependency is the container image pull from `ghcr.io
 ### Related guides
 
 - Deployment & configuration: `helm/docs/` (overview, quickstart, configuration, operations)
-- SCM provider setup: `helm/docs/04-scm-github.md`, `05-scm-gitlab.md`, `06-scm-bitbucket.md`
+- SCM provider setup: `helm/docs/04-scm-github.md`, `05-scm-gitlab.md`, `06-scm-bitbucket.md`, `07-scm-azure-devops.md`

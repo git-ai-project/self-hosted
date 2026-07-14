@@ -72,7 +72,7 @@ function validateApps(apps) {
   }
 
   const required = ["provider", "domain", "slug", "app_id", "webhook_secret", "client_id", "client_secret"];
-  const supportedProviders = new Set(["github", "gitlab", "bitbucket"]);
+  const supportedProviders = new Set(["github", "gitlab", "bitbucket", "azure-devops"]);
   const seenSlugs = new Set();
   apps.forEach((app, index) => {
     for (const key of required) {
@@ -84,8 +84,11 @@ function validateApps(apps) {
     const provider = app.provider.trim().toLowerCase();
     if (!supportedProviders.has(provider)) {
       throw new Error(
-        `SCM app #${index + 1} has unsupported provider '${app.provider}'. Supported: github, gitlab, bitbucket.`
+        `SCM app #${index + 1} has unsupported provider '${app.provider}'. Supported: github, gitlab, bitbucket, azure-devops.`
       );
+    }
+    if (provider === "azure-devops" && (typeof app.tenant_id !== "string" || app.tenant_id.trim() === "")) {
+      throw new Error(`SCM app #${index + 1} is missing required field 'tenant_id'.`);
     }
 
     const slug = app.slug.trim();
@@ -107,14 +110,15 @@ async function main() {
   try {
     console.log("Configure SCM apps for self-hosting");
     console.log(`Detected WEB_BASE_URL: ${baseUrl}`);
-    console.log("Keep the default slug unless you run multiple instances of the same provider: github, gitlab, bitbucket.");
+    console.log("Keep the default slug unless you run multiple instances of the same provider: github, gitlab, bitbucket, azure-devops.");
     console.log("");
 
     const enableGitHub = await askYesNo(rl, "Configure GitHub?", true);
     const enableGitLab = await askYesNo(rl, "Configure GitLab?", false);
     const enableBitbucket = await askYesNo(rl, "Configure Bitbucket?", false);
+    const enableAzureDevOps = await askYesNo(rl, "Configure Azure DevOps?", false);
 
-    if (!enableGitHub && !enableGitLab && !enableBitbucket) {
+    if (!enableGitHub && !enableGitLab && !enableBitbucket && !enableAzureDevOps) {
       console.error("At least one SCM is required. Re-run this command and configure at least one provider.");
       process.exit(1);
     }
@@ -200,6 +204,43 @@ async function main() {
       });
     }
 
+    if (enableAzureDevOps) {
+      console.log("\nAzure DevOps configuration");
+      const domain = await askRequired(rl, "Azure DevOps domain", "dev.azure.com");
+      const slug = await askRequired(
+        rl,
+        "Azure DevOps app slug (use 'azure-devops' unless you have multiple Azure DevOps instances)",
+        "azure-devops"
+      );
+      const appId = await askRequired(rl, "Azure DevOps app identifier", "azure-devops");
+      const clientId = await askRequired(rl, "Microsoft Entra Application (client) ID");
+      const clientSecret = await askRequired(rl, "Microsoft Entra client secret");
+      const tenantId = await askRequired(
+        rl,
+        "Microsoft Entra tenant ID (use 'common' for multi-tenant apps)",
+        "common"
+      );
+      const personalAccessToken = await askWithDefault(
+        rl,
+        "Azure DevOps PAT (optional; leave blank to use connected-user OAuth tokens)"
+      );
+
+      const app = {
+        provider: "azure-devops",
+        domain,
+        slug,
+        app_id: appId,
+        webhook_secret: "NOT_USED_FOR_AZURE_DEVOPS",
+        client_id: clientId,
+        client_secret: clientSecret,
+        tenant_id: tenantId,
+      };
+      if (personalAccessToken) {
+        app.private_key = personalAccessToken;
+      }
+      apps.push(app);
+    }
+
     validateApps(apps);
 
     fs.writeFileSync(generatedConfigPath, `${JSON.stringify(apps, null, 2)}\n`, "utf8");
@@ -231,6 +272,11 @@ async function main() {
       const bitbucketSlug = apps.find((a) => a.provider === "bitbucket")?.slug;
       console.log(`- Bitbucket callback URL: ${baseUrl}/api/auth/oauth2/callback/bitbucket`);
       console.log(`- Bitbucket webhook base: ${baseUrl}/worker/scm-webhook/${bitbucketSlug}?connection_token=<token>`);
+    }
+    if (enableAzureDevOps) {
+      const azureDevOpsSlug = apps.find((a) => a.provider === "azure-devops")?.slug;
+      console.log(`- Azure DevOps callback URL: ${baseUrl}/api/auth/oauth2/callback/azure-devops`);
+      console.log(`- Azure DevOps service hook base: ${baseUrl}/worker/scm-webhook/${azureDevOpsSlug}?connection_token=<token>`);
     }
 
     console.log("\nDone. Next: task up");

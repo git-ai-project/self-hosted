@@ -69,7 +69,7 @@ if (!Array.isArray(parsed) || parsed.length === 0) {
   process.exit(1);
 }
 const required = ["provider", "domain", "slug", "app_id", "webhook_secret", "client_id", "client_secret"];
-const supportedProviders = new Set(["github", "gitlab", "bitbucket"]);
+const supportedProviders = new Set(["github", "gitlab", "bitbucket", "azure-devops"]);
 const seenSlugs = new Set();
 for (const [index, app] of parsed.entries()) {
   if (typeof app !== "object" || !app) {
@@ -84,8 +84,15 @@ for (const [index, app] of parsed.entries()) {
   }
   if (!supportedProviders.has(app.provider.trim().toLowerCase())) {
     console.error(
-      `SCM_APPS_CONFIG[${index}] has unsupported provider '${app.provider}'. Supported: github, gitlab, bitbucket`
+      `SCM_APPS_CONFIG[${index}] has unsupported provider '${app.provider}'. Supported: github, gitlab, bitbucket, azure-devops`
     );
+    process.exit(1);
+  }
+  if (
+    app.provider.trim().toLowerCase() === "azure-devops" &&
+    (typeof app.tenant_id !== "string" || app.tenant_id.trim() === "")
+  ) {
+    console.error(`SCM_APPS_CONFIG[${index}] is missing tenant_id`);
     process.exit(1);
   }
   const slug = app.slug.trim();

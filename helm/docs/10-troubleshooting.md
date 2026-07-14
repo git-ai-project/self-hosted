@@ -63,18 +63,21 @@ kubectl get gateway,virtualservice -n "${HELM_NAMESPACE:-git-ai}"
   - GitHub: `/api/auth/callback/github`
   - GitLab: `/api/auth/callback/gitlab`
   - Bitbucket: `/api/auth/oauth2/callback/bitbucket`
+  - Azure DevOps: `/api/auth/oauth2/callback/azure-devops`
 
 ## SCM slug confusion
 
-- If you only have one app for a provider, use the default slug: `github`, `gitlab`, or `bitbucket`
+- If you only have one app for a provider, use the default slug: `github`, `gitlab`, `bitbucket`, or `azure-devops`
 - Only change the slug when you intentionally configure multiple instances of the same provider
 - Slugs must be unique because they are used in webhook URLs
+- Azure DevOps entries must include `tenant_id` (`common` for multi-tenant apps)
 
 ## Webhooks not arriving
 
 - Provider must reach your ingress host (`global.webBaseUrl`).
 - Confirm firewall/DNS/reverse proxy forwarding.
-- Confirm provider webhook secret matches SCM config.
+- For GitHub, GitLab, and Bitbucket, confirm the provider webhook secret matches SCM config.
+- For Azure DevOps, confirm the service hook was created by Git AI and includes the per-connection secret header.
 
 ## BullMQ dashboard not reachable
 
