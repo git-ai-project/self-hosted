@@ -24,7 +24,8 @@ Edit `generated/values.local.yaml`:
 task scm:configure
 ```
 
-Keep the default slug unless you run multiple instances of the same provider: `github`, `gitlab`, `bitbucket`.
+The wizard lets you enable GitHub, GitLab, Bitbucket, and Azure DevOps independently.
+Keep the default slug unless you run multiple instances of the same provider: `github`, `gitlab`, `bitbucket`, `azure-devops`.
 
 ## 4) Install stack
 

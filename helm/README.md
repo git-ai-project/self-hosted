@@ -100,7 +100,8 @@ Managed cloud shortcuts:
 - `docs/04-scm-github.md`
 - `docs/05-scm-gitlab.md`
 - `docs/06-scm-bitbucket.md`
-- `docs/07-admin-bootstrap.md`
-- `docs/08-operations.md`
-- `docs/09-troubleshooting.md`
-- `docs/10-upgrades.md`
+- `docs/07-scm-azure-devops.md`
+- `docs/08-admin-bootstrap.md`
+- `docs/09-operations.md`
+- `docs/10-troubleshooting.md`
+- `docs/11-upgrades.md`

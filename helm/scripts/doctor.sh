@@ -53,7 +53,7 @@ const required = [
   "client_id",
   "client_secret",
 ];
-const supportedProviders = new Set(["github", "gitlab", "bitbucket"]);
+const supportedProviders = new Set(["github", "gitlab", "bitbucket", "azure-devops"]);
 const seenSlugs = new Set();
 
 for (const [index, app] of parsed.entries()) {
@@ -72,6 +72,13 @@ for (const [index, app] of parsed.entries()) {
     console.error(
       `SCM config entry ${index} has unsupported provider '${app.provider}'`
     );
+    process.exit(1);
+  }
+  if (
+    provider === "azure-devops" &&
+    (typeof app.tenant_id !== "string" || app.tenant_id.trim() === "")
+  ) {
+    console.error(`SCM config entry ${index} is missing tenant_id`);
     process.exit(1);
   }
   const slug = app.slug.trim();

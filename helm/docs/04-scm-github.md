@@ -1,6 +1,6 @@
 # SCM Setup: GitHub (Optional)
 
-Use this if you want GitHub support. You can skip GitHub and use GitLab/Bitbucket only.
+Use this if you want GitHub support. You can skip GitHub and use GitLab, Bitbucket, or Azure DevOps only.
 
 ## Required URLs
 

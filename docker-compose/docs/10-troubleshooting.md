@@ -10,9 +10,10 @@
 - Re-run `task scm:configure`
 - Ensure `generated/scm.env` contains one non-empty JSON array
 - Ensure at least one provider is configured
-- Ensure providers are only `github`, `gitlab`, or `bitbucket`
+- Ensure providers are only `github`, `gitlab`, `bitbucket`, or `azure-devops`
 - Ensure each SCM app slug is unique
-- If you only have one app for a provider, use the default slug: `github`, `gitlab`, or `bitbucket`
+- If you only have one app for a provider, use the default slug: `github`, `gitlab`, `bitbucket`, or `azure-devops`
+- Ensure Azure DevOps entries include `tenant_id` (`common` for multi-tenant apps)
 
 ## Analyze jobs failing immediately
 
@@ -36,12 +37,14 @@
   - GitHub: `/api/auth/callback/github`
   - GitLab: `/api/auth/callback/gitlab`
   - Bitbucket: `/api/auth/oauth2/callback/bitbucket`
+  - Azure DevOps: `/api/auth/oauth2/callback/azure-devops`
 
 ## Webhooks not arriving
 
 - Provider must reach your `WEB_BASE_URL`
 - Ensure firewall/DNS/reverse proxy forwards requests
-- Confirm provider webhook secret matches SCM config
+- For GitHub, GitLab, and Bitbucket, confirm the provider webhook secret matches SCM config
+- For Azure DevOps, confirm the service hook was created by Git AI and includes the per-connection secret header
 
 ## BullMQ dashboard not reachable on `:3001`
 

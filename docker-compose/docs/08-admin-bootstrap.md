@@ -13,9 +13,6 @@ After deploying the stack, create your first organization using the CLI.
 task admin:grant -- <your-email-or-user-id>
 ```
 
-`task admin:grant`, `task admin:psql`, and `task org:create` target the application database `gitai` by default.
-If you changed `postgresql.auth.database`, run them with `APP_DB_NAME=<your-db>`.
-
 This grants your user the `admin` role, which is required to own an organization
 and gives access to the `/admin` panel for system-wide management.
 
@@ -35,7 +32,7 @@ Only admin users are shown as eligible org owners. If you need to create an org
 for another user, promote them to admin first with `task admin:grant`.
 
 We recommend creating a single organization for your entire company. One org can
-connect multiple SCM providers (GitHub, GitLab, Bitbucket) and manage all
+connect multiple SCM providers (GitHub, GitLab, Bitbucket, Azure DevOps) and manage all
 repositories in one place. You can run this command again to create additional
 organizations if needed, but most deployments only need one.
 
@@ -43,12 +40,10 @@ organizations if needed, but most deployments only need one.
 
 By default, `DISABLE_ORG_CREATION=true` prevents users from creating organizations
 through the UI or API. If you want to allow users to create their own organizations
-(not recommended for most self-hosted deployments), set:
+(not recommended for most self-hosted deployments), set in your `.env` file:
 
-```yaml
-# In your values override (e.g., generated/values.local.yaml)
-app:
-  disableOrgCreation: false
+```env
+DISABLE_ORG_CREATION=false
 ```
 
 We recommend keeping org creation disabled and using `task org:create` for all
