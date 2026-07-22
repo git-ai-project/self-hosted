@@ -138,6 +138,10 @@ clickhouse:
 
 migrations:
   enabled: true
+  clickhouseImage:
+    repository: ghcr.io/git-ai-project/git-ai-web-ee
+    tag: "7160143-clickhouse-migrator"
+    pullPolicy: IfNotPresent
   resources:
     requests:
       cpu: 100m

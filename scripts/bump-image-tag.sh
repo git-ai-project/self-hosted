@@ -16,7 +16,8 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [TAG]
 
-Bump the application image tag across this repository, commit, and push.
+Bump the application and ClickHouse migrator image tags across this repository,
+commit, and push.
 
 If TAG is provided, use it directly.
 If omitted, fetch the latest commit SHA from $REPO origin/$BRANCH.
@@ -90,15 +91,19 @@ while true; do
 done
 
 OLD_TAG=$(sed -n 's/^  tag: "\(.*\)"/\1/p' helm/values.yaml)
-if [[ "$OLD_TAG" == "$NEW_TAG" ]]; then
-  echo "Image tag is already $NEW_TAG — nothing to do."
+OLD_MIGRATOR_TAG=$(sed -n 's/^    tag: "\(.*-clickhouse-migrator\)"/\1/p' helm/values.yaml)
+NEW_MIGRATOR_TAG="$NEW_TAG-clickhouse-migrator"
+if [[ "$OLD_TAG" == "$NEW_TAG" && "$OLD_MIGRATOR_TAG" == "$NEW_MIGRATOR_TAG" ]]; then
+  echo "Image tags are already $NEW_TAG — nothing to do."
   exit 0
 fi
 
 echo "Bumping image tag: $OLD_TAG → $NEW_TAG"
 
 sed -i '' "s|tag: \"$OLD_TAG\"|tag: \"$NEW_TAG\"|" helm/values.yaml
+sed -i '' -E "s|tag: \"[0-9a-fA-F]{7,40}-clickhouse-migrator\"|tag: \"$NEW_MIGRATOR_TAG\"|" helm/values.yaml
 sed -i '' "s|ghcr.io/git-ai-project/git-ai-web-ee:$OLD_TAG|ghcr.io/git-ai-project/git-ai-web-ee:$NEW_TAG|g" docker-compose/docker-compose.yml
+sed -i '' -E "s|ghcr.io/git-ai-project/git-ai-web-ee:[0-9a-fA-F]{7,40}-clickhouse-migrator|ghcr.io/git-ai-project/git-ai-web-ee:$NEW_MIGRATOR_TAG|g" docker-compose/docker-compose.yml
 
 echo "Updated files:"
 git diff --stat
