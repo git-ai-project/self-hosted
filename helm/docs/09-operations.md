@@ -11,7 +11,9 @@
 ## Migrations
 
 Migration jobs run as Helm hooks (`post-install,post-upgrade`).
-They use the same EE image configured under `image.repository` / `image.tag` and run migration scripts from `/app/scripts` with SQL in `/app/migrations`.
+The Postgres job uses the EE app image configured under `image`. The ClickHouse
+job uses the dedicated image configured under `migrations.clickhouseImage`.
+Each image contains its migration script and SQL assets.
 
 Useful commands:
 

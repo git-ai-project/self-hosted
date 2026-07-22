@@ -58,7 +58,7 @@ services:
         node /app/scripts/migrate-postgres.mjs
 
   migrator-clickhouse:
-    image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:85cd536}
+    image: ${CLICKHOUSE_MIGRATOR_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:7160143-clickhouse-migrator}
     restart: "no"
     depends_on:
       clickhouse:
@@ -68,7 +68,6 @@ services:
     environment:
       CLICKHOUSE_HOST: clickhouse
       CLICKHOUSE_PORT: 9000
-    command: ["sh", "/app/scripts/migrate-clickhouse.sh"]
 
   web:
     image: ${WEB_IMAGE:-ghcr.io/git-ai-project/git-ai-web-ee:85cd536}

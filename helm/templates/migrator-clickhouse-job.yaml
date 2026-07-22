@@ -27,11 +27,8 @@ spec:
       {{- end }}
       containers:
         - name: migrator-clickhouse
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command:
-            - sh
-            - /app/scripts/migrate-clickhouse.sh
+          image: "{{ .Values.migrations.clickhouseImage.repository }}:{{ .Values.migrations.clickhouseImage.tag }}"
+          imagePullPolicy: {{ .Values.migrations.clickhouseImage.pullPolicy }}
           env:
             - name: CLICKHOUSE_HOST
               value: {{ include "gitai.clickhouseServiceName" . | quote }}

@@ -42,4 +42,6 @@ Managed cloud shortcuts:
 - AKS app-routing defaults: `task up -- -f values.azure.yaml`
 - Istio mode: `task up -- -f values.istio.yaml`
 
-Migration jobs use the same image configured under `image.repository` / `image.tag`.
+The Postgres migration job uses `image.repository` / `image.tag`. The
+ClickHouse job uses the smaller image configured under
+`migrations.clickhouseImage`.

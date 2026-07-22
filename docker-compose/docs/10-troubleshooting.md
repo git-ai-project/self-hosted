@@ -65,12 +65,12 @@
 
 ## Migrator fails to start
 
-- Confirm `WEB_IMAGE` points to an EE image that includes:
-  - `/app/scripts/migrate-postgres.mjs`
-  - `/app/scripts/migrate-clickhouse.sh`
-  - `/app/migrations/postgres`
-  - `/app/migrations/clickhouse`
-- Re-pull image and restart: `docker compose pull && task up`
+- Confirm `WEB_IMAGE` includes `/app/scripts/migrate-postgres.mjs` and
+  `/app/migrations/postgres`.
+- Confirm `CLICKHOUSE_MIGRATOR_IMAGE` points to the dedicated migrator image;
+  it contains `/app/scripts/migrate-clickhouse.sh` and
+  `/app/migrations/clickhouse`.
+- Re-pull the images and restart: `docker compose pull && task up`
 
 ## ClickHouse running out of storage
 

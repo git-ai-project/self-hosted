@@ -18,7 +18,8 @@ BullMQ dashboard is available at `http://localhost:3001`.
 
 This package defaults to `ANALYZE_BATCH_PROVIDER=local` (no extra batch env required).
 It also defaults to `STORAGE_BACKEND=local` (no cloud storage bucket required).
-Postgres/ClickHouse migrators run from the same EE image as `web`/`worker` using `/app/scripts` and `/app/migrations`.
+The Postgres migrator runs from the EE app image. The ClickHouse migrator uses
+a dedicated image containing only ClickHouse and its schema migrations.
 
 This package does not configure TLS/reverse proxy automatically. Use your own ingress/reverse proxy in front of `web` as needed.
 
@@ -53,7 +54,8 @@ This removes the book demo / booking-gated onboarding screen for that org.
 
 ## Image Override
 
-- Set `WEB_IMAGE` in `.env` to pin a specific EE image tag/digest for `web`, `worker`, and both migrators.
+- Set `WEB_IMAGE` in `.env` to pin the EE image used by `web`, `worker`, and the Postgres migrator.
+- Set `CLICKHOUSE_MIGRATOR_IMAGE` to override the dedicated ClickHouse migrator image.
 
 ## BullMQ Dashboard
 
