@@ -1,0 +1,19 @@
+helm/scripts/test-render.sh
+  s_add0da383d5b18::t_c6dccd73b47413 9-10,347,357,367
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.5.3",
+  "base_commit_sha": "2d0a9c1c82da3fb5f527a9062d6430a6dd3845f0",
+  "prompts": {},
+  "sessions": {
+    "s_add0da383d5b18": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8b72-0fb8-7bb0-9ab4-5480d5b2ee80",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Sasha Varlamov <sasha@sashavarlamov.com>"
+    }
+  }
+}

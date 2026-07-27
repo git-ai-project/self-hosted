@@ -1,0 +1,39 @@
+docs/architecture-and-security.md
+  s_51256d484ace03::t_f1d3cd977981af 50
+  s_51256d484ace03::t_0c26bd7312c32a 200
+  s_51256d484ace03::t_b66e4562cf3622 82-84,86-91,93-95
+  s_51256d484ace03::t_44a354ef7d535d 70
+  s_51256d484ace03::t_a6c4b253df7b47 182
+  s_51256d484ace03::t_98356c3cc143f2 115
+  s_51256d484ace03::t_9e64bc06c90a3d 6
+  s_51256d484ace03::t_238252d8561cf2 14
+  s_51256d484ace03::t_ee9195e47347c1 254-255
+  s_51256d484ace03::t_2d008f46a520e9 262-263
+  s_51256d484ace03::t_b33fa02d3f0bc0 38,40-43
+  s_51256d484ace03::t_8d4721bb0aadb4 35
+  s_51256d484ace03::t_a1e31cccc4ec49 145,147,149-153,155-159,161-162
+  s_51256d484ace03::t_1bf003b16f4f74 296,303-304
+  s_51256d484ace03::t_71186e7985bb0a 292
+  s_51256d484ace03::t_491e150f8f6d7e 22
+  s_51256d484ace03::t_e06d1b30db20e5 126-135
+  s_51256d484ace03::t_3847d32089a07f 34
+  s_51256d484ace03::t_2e88bcb1c5b425 39
+  s_51256d484ace03::t_fc9010ecfc5e42 99-102,104,106-107
+  s_51256d484ace03::t_90a41f0c7dcbce 188
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "3291d02af2bee854d6f29b2eb67a01ef12c3e658",
+  "prompts": {},
+  "sessions": {
+    "s_51256d484ace03": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4be18e5d-8df2-4ce0-9ac1-bda558ad9498",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Aidan Cunniffe <acunniffe@gmail.com>"
+    }
+  }
+}
