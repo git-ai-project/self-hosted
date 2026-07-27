@@ -158,7 +158,7 @@ numbers match the diagram in §1.
 | --- | --- | --- | --- |
 | **①** | Developer laptop → **metrics ingestion endpoint** | Usage/session telemetry | **Internet-exposed by design** (devs/CI push from anywhere). **Defense in depth:** TLS-only, authenticated endpoint requiring an org-scoped **Client Telemetry Write key** (`telemetry.write`) that is **write-only and cannot read any data**. Similar to how OTEL collector configurations let clients write but not read data, the key grants telemetry-write only |
 | **②** | CLI → SCM (writing notes) | Push `refs/notes/ai` into the repo | Uses the **SCM's own permissions** (GitHub / GitLab / Bitbucket / ADO) — developers write notes refs into the repo with their existing git credentials; Git AI is not in the path |
-| **③** | SCM → backend (webhooks) | PR / push events | **HMAC signature verification** (`timingSafeEqual`) against `SCM_WEBHOOK_SECRET_KEY` / per-app `webhook_secret`; delivery-id dedupe. Provider headers: `x-hub-signature-256` (GitHub), `x-gitlab-token`, `x-request-signature` (Bitbucket), `x-azure-devops-secret` (ADO) |
+| **③** | SCM → backend (webhooks) | PR / push events | **HMAC signature verification** (`timingSafeEqual`) against `SCM_WEBHOOK_SECRET_KEY` / per-connection secret; delivery-id dedupe. Provider headers include `x-hub-signature-256` (GitHub), `x-gitlab-token`, `x-request-signature` (Bitbucket Cloud), `x-hub-signature` (Bitbucket Data Center), and `x-azure-devops-secret` (ADO) |
 | **④** | Worker → SCM (REST) | Fetch PRs/commits/notes, post comments & status | Per-org **app / OAuth token**, **least-privilege permissions** (§5), auto-refreshed; TLS-only egress. GitHub uses a short-lived installation token scoped to the App's granted permissions — write capability only where notes must be pushed |
 | **⑤** | Backend → identity provider | App / OAuth token mint + refresh | GitHub: App JWT (signed with App private key) exchanged for an installation token at `api.github.com`. OAuth providers (ADO/GitLab/Bitbucket): `client_id`/`client_secret` over TLS to the token endpoint; refresh tokens stored encrypted-at-rest in Postgres |
 | **⑥** | Browser → web UI | Operator/admin sessions | Custom identity providers supported; session cookies; org-membership check on every route |
@@ -336,4 +336,4 @@ required; the only external dependency is the container image pull from `ghcr.io
 ### Related guides
 
 - Deployment & configuration: `helm/docs/` (overview, quickstart, configuration, operations)
-- SCM provider setup: `helm/docs/04-scm-github.md`, `05-scm-gitlab.md`, `06-scm-bitbucket.md`, `07-scm-azure-devops.md`
+- SCM provider setup: `helm/docs/04-scm-github.md`, `05-scm-gitlab.md`, `06-scm-bitbucket.md`, `07-scm-azure-devops.md`, `08-scm-bitbucket-data-center.md`

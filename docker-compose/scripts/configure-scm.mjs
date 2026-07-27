@@ -66,13 +66,32 @@ async function askYesNo(rl, prompt, defaultValue) {
   }
 }
 
+function parseBitbucketDataCenterBaseUrl(value) {
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error("Bitbucket Data Center base URL must be an absolute HTTP or HTTPS URL.");
+  }
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("Bitbucket Data Center base URL must use HTTP or HTTPS.");
+  }
+  if (parsed.search || parsed.hash) {
+    throw new Error("Bitbucket Data Center base URL cannot contain a query string or fragment.");
+  }
+  return {
+    baseUrl: parsed.toString().replace(/\/+$/, ""),
+    domain: parsed.host,
+  };
+}
+
 function validateApps(apps) {
   if (!Array.isArray(apps) || apps.length === 0) {
     throw new Error("At least one SCM app is required.");
   }
 
   const required = ["provider", "domain", "slug", "app_id", "webhook_secret", "client_id", "client_secret"];
-  const supportedProviders = new Set(["github", "gitlab", "bitbucket", "azure-devops"]);
+  const supportedProviders = new Set(["github", "gitlab", "bitbucket", "bitbucket-datacenter", "azure-devops"]);
   const seenSlugs = new Set();
   apps.forEach((app, index) => {
     for (const key of required) {
@@ -84,11 +103,20 @@ function validateApps(apps) {
     const provider = app.provider.trim().toLowerCase();
     if (!supportedProviders.has(provider)) {
       throw new Error(
-        `SCM app #${index + 1} has unsupported provider '${app.provider}'. Supported: github, gitlab, bitbucket, azure-devops.`
+        `SCM app #${index + 1} has unsupported provider '${app.provider}'. Supported: github, gitlab, bitbucket, bitbucket-datacenter, azure-devops.`
       );
     }
     if (provider === "azure-devops" && (typeof app.tenant_id !== "string" || app.tenant_id.trim() === "")) {
       throw new Error(`SCM app #${index + 1} is missing required field 'tenant_id'.`);
+    }
+    if (provider === "bitbucket-datacenter") {
+      if (typeof app.private_key !== "string" || app.private_key.trim() === "") {
+        throw new Error(`SCM app #${index + 1} is missing required field 'private_key'.`);
+      }
+      if (typeof app.base_url !== "string" || app.base_url.trim() === "") {
+        throw new Error(`SCM app #${index + 1} is missing required field 'base_url'.`);
+      }
+      parseBitbucketDataCenterBaseUrl(app.base_url);
     }
 
     const slug = app.slug.trim();
@@ -110,15 +138,16 @@ async function main() {
   try {
     console.log("Configure SCM apps for self-hosting");
     console.log(`Detected WEB_BASE_URL: ${baseUrl}`);
-    console.log("Keep the default slug unless you run multiple instances of the same provider: github, gitlab, bitbucket, azure-devops.");
+    console.log("Keep the default slug unless you run multiple instances of the same provider: github, gitlab, bitbucket, bitbucket-datacenter, azure-devops.");
     console.log("");
 
     const enableGitHub = await askYesNo(rl, "Configure GitHub?", true);
     const enableGitLab = await askYesNo(rl, "Configure GitLab?", false);
-    const enableBitbucket = await askYesNo(rl, "Configure Bitbucket?", false);
+    const enableBitbucket = await askYesNo(rl, "Configure Bitbucket Cloud?", false);
+    const enableBitbucketDataCenter = await askYesNo(rl, "Configure Bitbucket Data Center?", false);
     const enableAzureDevOps = await askYesNo(rl, "Configure Azure DevOps?", false);
 
-    if (!enableGitHub && !enableGitLab && !enableBitbucket && !enableAzureDevOps) {
+    if (!enableGitHub && !enableGitLab && !enableBitbucket && !enableBitbucketDataCenter && !enableAzureDevOps) {
       console.error("At least one SCM is required. Re-run this command and configure at least one provider.");
       process.exit(1);
     }
@@ -181,7 +210,7 @@ async function main() {
     }
 
     if (enableBitbucket) {
-      console.log("\nBitbucket configuration");
+      console.log("\nBitbucket Cloud configuration");
       const domain = await askRequired(rl, "Bitbucket domain", "bitbucket.org");
       const slug = await askRequired(
         rl,
@@ -199,6 +228,45 @@ async function main() {
         slug,
         app_id: appId,
         webhook_secret: webhookSecret,
+        client_id: clientId,
+        client_secret: clientSecret,
+      });
+    }
+
+    if (enableBitbucketDataCenter) {
+      console.log("\nBitbucket Data Center configuration");
+      const parsedBaseUrl = parseBitbucketDataCenterBaseUrl(
+        await askRequired(
+          rl,
+          "Bitbucket Data Center base URL (include any context path)",
+          "https://bitbucket.example.com"
+        )
+      );
+      const slug = await askRequired(
+        rl,
+        "Bitbucket Data Center app slug (change only for multiple instances)",
+        "bitbucket-datacenter"
+      );
+      const appId = await askRequired(
+        rl,
+        "Bitbucket Data Center app identifier",
+        "bitbucket-datacenter"
+      );
+      const personalAccessToken = await askRequired(
+        rl,
+        "Bitbucket Data Center personal HTTP access token"
+      );
+      const clientId = await askRequired(rl, "Bitbucket Data Center OAuth client ID");
+      const clientSecret = await askRequired(rl, "Bitbucket Data Center OAuth client secret");
+
+      apps.push({
+        provider: "bitbucket-datacenter",
+        domain: parsedBaseUrl.domain,
+        base_url: parsedBaseUrl.baseUrl,
+        slug,
+        app_id: appId,
+        private_key: personalAccessToken,
+        webhook_secret: "NOT_USED_FOR_BITBUCKET_DATA_CENTER",
         client_id: clientId,
         client_secret: clientSecret,
       });
@@ -272,6 +340,11 @@ async function main() {
       const bitbucketSlug = apps.find((a) => a.provider === "bitbucket")?.slug;
       console.log(`- Bitbucket callback URL: ${baseUrl}/api/auth/oauth2/callback/bitbucket`);
       console.log(`- Bitbucket webhook base: ${baseUrl}/worker/scm-webhook/${bitbucketSlug}?connection_token=<token>`);
+    }
+    if (enableBitbucketDataCenter) {
+      const bitbucketDataCenterSlug = apps.find((a) => a.provider === "bitbucket-datacenter")?.slug;
+      console.log(`- Bitbucket Data Center callback URL: ${baseUrl}/api/auth/oauth2/callback/${bitbucketDataCenterSlug}`);
+      console.log(`- Bitbucket Data Center webhook base: ${baseUrl}/worker/scm-webhook/${bitbucketDataCenterSlug}?connection_token=<token>`);
     }
     if (enableAzureDevOps) {
       const azureDevOpsSlug = apps.find((a) => a.provider === "azure-devops")?.slug;

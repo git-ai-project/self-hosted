@@ -73,7 +73,8 @@ This removes the book demo / booking-gated onboarding screen for that org.
 - `docs/05-scm-gitlab.md`
 - `docs/06-scm-bitbucket.md`
 - `docs/07-scm-azure-devops.md`
-- `docs/08-admin-bootstrap.md`
-- `docs/09-operations.md`
-- `docs/10-troubleshooting.md`
-- `docs/11-upgrades.md`
+- `docs/08-scm-bitbucket-data-center.md`
+- `docs/09-admin-bootstrap.md`
+- `docs/10-operations.md`
+- `docs/11-troubleshooting.md`
+- `docs/12-upgrades.md`
