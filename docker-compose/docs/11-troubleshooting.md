@@ -10,9 +10,10 @@
 - Re-run `task scm:configure`
 - Ensure `generated/scm.env` contains one non-empty JSON array
 - Ensure at least one provider is configured
-- Ensure providers are only `github`, `gitlab`, `bitbucket`, or `azure-devops`
+- Ensure providers are only `github`, `gitlab`, `bitbucket`, `bitbucket-datacenter`, or `azure-devops`
 - Ensure each SCM app slug is unique
-- If you only have one app for a provider, use the default slug: `github`, `gitlab`, `bitbucket`, or `azure-devops`
+- If you only have one app for a provider, use the default slug: `github`, `gitlab`, `bitbucket`, `bitbucket-datacenter`, or `azure-devops`
+- Ensure Bitbucket Data Center entries include `private_key`; set `base_url` to the full instance URL when Bitbucket uses a context path
 - Ensure Azure DevOps entries include `tenant_id` (`common` for multi-tenant apps)
 
 ## Analyze jobs failing immediately
@@ -36,7 +37,8 @@
 - Check provider callback URL exactly matches `WEB_BASE_URL` paths:
   - GitHub: `/api/auth/callback/github`
   - GitLab: `/api/auth/callback/gitlab`
-  - Bitbucket: `/api/auth/oauth2/callback/bitbucket`
+  - Bitbucket Cloud: `/api/auth/oauth2/callback/bitbucket`
+  - Bitbucket Data Center: `/api/auth/oauth2/callback/<bitbucket-data-center-slug>`
   - Azure DevOps: `/api/auth/oauth2/callback/azure-devops`
 
 ## Webhooks not arriving
@@ -44,6 +46,7 @@
 - Provider must reach your `WEB_BASE_URL`
 - Ensure firewall/DNS/reverse proxy forwards requests
 - For GitHub, GitLab, and Bitbucket, confirm the provider webhook secret matches SCM config
+- For Bitbucket Data Center, confirm Git AI created the project webhook and the service-account token has project-admin access
 - For Azure DevOps, confirm the service hook was created by Git AI and includes the per-connection secret header
 
 ## BullMQ dashboard not reachable on `:3001`

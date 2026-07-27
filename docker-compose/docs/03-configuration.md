@@ -110,10 +110,11 @@ Provider buttons on the sign-in page are config-driven:
 
 - GitHub button appears only if a GitHub app is configured.
 - GitLab button appears only if a GitLab app is configured.
-- Bitbucket button appears only if a Bitbucket app is configured.
+- Bitbucket button appears only if a Bitbucket Cloud app is configured.
+- A Bitbucket Data Center button appears for each configured instance.
 - Azure DevOps button appears only if an Azure DevOps app is configured.
 
 Slug guidance:
 
-- Default slugs: `github`, `gitlab`, `bitbucket`, `azure-devops`
+- Default slugs: `github`, `gitlab`, `bitbucket`, `bitbucket-datacenter`, `azure-devops`
 - Change a slug only if you run multiple instances of the same provider

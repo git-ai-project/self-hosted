@@ -28,6 +28,17 @@
     "client_secret": "YOUR_BITBUCKET_CLIENT_SECRET"
   },
   {
+    "provider": "bitbucket-datacenter",
+    "domain": "bitbucket.example.com",
+    "base_url": "https://bitbucket.example.com",
+    "slug": "bitbucket-datacenter",
+    "app_id": "bitbucket-datacenter",
+    "private_key": "YOUR_BITBUCKET_DATA_CENTER_HTTP_ACCESS_TOKEN",
+    "webhook_secret": "NOT_USED_FOR_BITBUCKET_DATA_CENTER",
+    "client_id": "YOUR_BITBUCKET_DATA_CENTER_OAUTH_CLIENT_ID",
+    "client_secret": "YOUR_BITBUCKET_DATA_CENTER_OAUTH_CLIENT_SECRET"
+  },
+  {
     "provider": "azure-devops",
     "domain": "dev.azure.com",
     "slug": "azure-devops",

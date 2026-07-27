@@ -12,8 +12,8 @@ Install:
 You also need:
 
 - A valid Git AI enterprise `LICENSE_KEY`
-- At least one SCM app configured (GitHub, GitLab, Bitbucket, and/or Azure DevOps)
-- For most installs, one app per provider with the default slug (`github`, `gitlab`, `bitbucket`, `azure-devops`)
+- At least one SCM app configured (GitHub, GitLab, Bitbucket Cloud, Bitbucket Data Center, and/or Azure DevOps)
+- For most installs, one app per provider with the default slug (`github`, `gitlab`, `bitbucket`, `bitbucket-datacenter`, `azure-devops`)
 
 ## Storage Requirements
 

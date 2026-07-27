@@ -30,7 +30,7 @@ Backward compatibility:
 
 ## SCM App Slugs
 
-Default slugs: `github`, `gitlab`, `bitbucket`, `azure-devops`.
+Default slugs: `github`, `gitlab`, `bitbucket`, `bitbucket-datacenter`, `azure-devops`.
 Change a slug only if you run multiple instances of the same provider.
 
 ## Optional SQL API

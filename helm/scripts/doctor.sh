@@ -53,7 +53,7 @@ const required = [
   "client_id",
   "client_secret",
 ];
-const supportedProviders = new Set(["github", "gitlab", "bitbucket", "azure-devops"]);
+const supportedProviders = new Set(["github", "gitlab", "bitbucket", "bitbucket-datacenter", "azure-devops"]);
 const seenSlugs = new Set();
 
 for (const [index, app] of parsed.entries()) {
@@ -80,6 +80,27 @@ for (const [index, app] of parsed.entries()) {
   ) {
     console.error(`SCM config entry ${index} is missing tenant_id`);
     process.exit(1);
+  }
+  if (provider === "bitbucket-datacenter") {
+    if (typeof app.private_key !== "string" || app.private_key.trim() === "") {
+      console.error(`SCM config entry ${index} is missing private_key`);
+      process.exit(1);
+    }
+    if (app.base_url !== undefined) {
+      if (typeof app.base_url !== "string" || app.base_url.trim() === "") {
+        console.error(`SCM config entry ${index} has invalid base_url`);
+        process.exit(1);
+      }
+      try {
+        const baseUrl = new URL(app.base_url);
+        if (!["http:", "https:"].includes(baseUrl.protocol) || baseUrl.search || baseUrl.hash) {
+          throw new Error("must use HTTP or HTTPS without a query string or fragment");
+        }
+      } catch (error) {
+        console.error(`SCM config entry ${index} has invalid base_url: ${error.message}`);
+        process.exit(1);
+      }
+    }
   }
   const slug = app.slug.trim();
   if (seenSlugs.has(slug)) {

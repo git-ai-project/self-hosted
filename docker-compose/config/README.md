@@ -5,5 +5,5 @@ This directory stores SCM app configuration artifacts.
 
 `SCM_APPS_CONFIG` is emitted into `generated/scm.env` and consumed by Docker Compose.
 At least one SCM app is required.
-Default slugs are `github`, `gitlab`, `bitbucket`, and `azure-devops`.
+Default slugs are `github`, `gitlab`, `bitbucket`, `bitbucket-datacenter`, and `azure-devops`.
 Change a slug only if you run multiple instances of the same provider.

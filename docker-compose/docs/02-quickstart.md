@@ -26,9 +26,9 @@ Edit `.env`:
 task scm:configure
 ```
 
-The wizard lets you enable GitHub, GitLab, Bitbucket, and Azure DevOps independently.
+The wizard lets you enable GitHub, GitLab, Bitbucket Cloud, Bitbucket Data Center, and Azure DevOps independently.
 If all are skipped, it exits with an error because at least one SCM is required.
-Keep the default slug unless you run multiple instances of the same provider: `github`, `gitlab`, `bitbucket`, `azure-devops`.
+Keep the default slug unless you run multiple instances of the same provider: `github`, `gitlab`, `bitbucket`, `bitbucket-datacenter`, `azure-devops`.
 
 ## 4) Start Stack
 

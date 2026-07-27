@@ -62,14 +62,16 @@ kubectl get gateway,virtualservice -n "${HELM_NAMESPACE:-git-ai}"
 - Check provider callback URL exactly matches your `global.webBaseUrl`:
   - GitHub: `/api/auth/callback/github`
   - GitLab: `/api/auth/callback/gitlab`
-  - Bitbucket: `/api/auth/oauth2/callback/bitbucket`
+  - Bitbucket Cloud: `/api/auth/oauth2/callback/bitbucket`
+  - Bitbucket Data Center: `/api/auth/oauth2/callback/<bitbucket-data-center-slug>`
   - Azure DevOps: `/api/auth/oauth2/callback/azure-devops`
 
 ## SCM slug confusion
 
-- If you only have one app for a provider, use the default slug: `github`, `gitlab`, `bitbucket`, or `azure-devops`
+- If you only have one app for a provider, use the default slug: `github`, `gitlab`, `bitbucket`, `bitbucket-datacenter`, or `azure-devops`
 - Only change the slug when you intentionally configure multiple instances of the same provider
 - Slugs must be unique because they are used in webhook URLs
+- Bitbucket Data Center entries must include `private_key`; set `base_url` to the full instance URL when Bitbucket uses a context path
 - Azure DevOps entries must include `tenant_id` (`common` for multi-tenant apps)
 
 ## Webhooks not arriving
@@ -77,6 +79,7 @@ kubectl get gateway,virtualservice -n "${HELM_NAMESPACE:-git-ai}"
 - Provider must reach your ingress host (`global.webBaseUrl`).
 - Confirm firewall/DNS/reverse proxy forwarding.
 - For GitHub, GitLab, and Bitbucket, confirm the provider webhook secret matches SCM config.
+- For Bitbucket Data Center, confirm Git AI created the project webhook and the service-account token has project-admin access.
 - For Azure DevOps, confirm the service hook was created by Git AI and includes the per-connection secret header.
 
 ## BullMQ dashboard not reachable
