@@ -1,0 +1,70 @@
+docker-compose/config/scm-apps.template.json
+  s_ff458449afcecc::t_12911183671f0b 31-40
+  s_ff458449afcecc::t_41ab947bfd24c9 30
+helm/docs/08-scm-bitbucket-data-center.md
+  s_ff458449afcecc::t_dda00b25a244e9 1-46,48-78
+  s_ff458449afcecc::t_539f35e06acada 47
+helm/docs/03-configuration.md
+  s_ff458449afcecc::t_1cb98c5f964202 33
+helm/docs/11-troubleshooting.md
+  s_ff458449afcecc::t_4c3c6cc8cb402f 65-66,71,82
+  s_ff458449afcecc::t_2e333cb0d33003 74
+docker-compose/docs/03-configuration.md
+  s_ff458449afcecc::t_1cb98c5f964202 113-114,119
+README.md
+  s_ff458449afcecc::t_4c3c6cc8cb402f 80
+helm/docs/01-prereqs.md
+  s_ff458449afcecc::t_4c3c6cc8cb402f 15-16
+helm/README.md
+  s_ff458449afcecc::t_1cb98c5f964202 104-108
+docker-compose/scripts/configure-scm.mjs
+  s_ff458449afcecc::t_bb66c834cd1225 69-87,94,106,112-120,141,146-147,150,213,236-274,344-348
+helm/scripts/doctor.sh
+  s_ff458449afcecc::t_e1417f6e30dfb1 56,84-88,93,103
+  s_ff458449afcecc::t_2e333cb0d33003 89-92,94-102
+  s_ff458449afcecc::t_171ed3ad4e0f7a 104
+docker-compose/scripts/doctor.sh
+  s_ff458449afcecc::t_e1417f6e30dfb1 72,87,97-102,107,117
+  s_ff458449afcecc::t_2e333cb0d33003 103-106,108-116
+helm/docs/02-quickstart.md
+  s_ff458449afcecc::t_1cb98c5f964202 27-28
+helm/docs/09-admin-bootstrap.md
+  s_ff458449afcecc::t_4c3c6cc8cb402f 38
+docs/architecture-and-security.md
+  s_ff458449afcecc::t_4c3c6cc8cb402f 161
+  s_ff458449afcecc::t_1cb98c5f964202 339
+docker-compose/docs/09-admin-bootstrap.md
+  s_ff458449afcecc::t_4c3c6cc8cb402f 35
+helm/scripts/configure-scm.mjs
+  s_ff458449afcecc::t_b30ff12bab8b8f 58-76,83,100-108,127,132-133,136,198,221-259,319-322
+docker-compose/config/README.md
+  s_ff458449afcecc::t_1cb98c5f964202 8
+docker-compose/README.md
+  s_ff458449afcecc::t_1cb98c5f964202 76-80
+docker-compose/docs/02-quickstart.md
+  s_ff458449afcecc::t_1cb98c5f964202 29,31
+docker-compose/docs/08-scm-bitbucket-data-center.md
+  s_ff458449afcecc::t_539f35e06acada 47
+  s_ff458449afcecc::t_dda00b25a244e9 1-46,48-78
+docker-compose/docs/01-prereqs.md
+  s_ff458449afcecc::t_4c3c6cc8cb402f 13-14
+docker-compose/docs/11-troubleshooting.md
+  s_ff458449afcecc::t_4c3c6cc8cb402f 13,15,40-41,49
+  s_ff458449afcecc::t_2e333cb0d33003 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.6.16",
+  "base_commit_sha": "ea383b5bfce274946c7705e0e1e467acf6ca0731",
+  "prompts": {},
+  "sessions": {
+    "s_ff458449afcecc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f82f6-e087-7823-ae3f-5dd68a452c41",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Sasha Varlamov <sasha@sashavarlamov.com>"
+    }
+  }
+}
