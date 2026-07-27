@@ -1,0 +1,21 @@
+helm/docs/05-scm-gitlab.md
+  s_36ebc5f5648a44::t_2702869295a2a2 13-19
+docker-compose/docs/05-scm-gitlab.md
+  s_36ebc5f5648a44::t_2702869295a2a2 13-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.5.9",
+  "base_commit_sha": "beff4ee45d329a6935683407bbd9eba51a79ff4c",
+  "prompts": {},
+  "sessions": {
+    "s_36ebc5f5648a44": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ed6a1-660e-7003-8eb9-96c04dc69b7b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Sasha Varlamov <sasha@sashavarlamov.com>"
+    }
+  }
+}

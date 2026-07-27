@@ -1,0 +1,40 @@
+docker-compose/.env.example
+  s_c424fe16a2f66e::t_f1c061c9f34b31 6-9
+docker-compose/docs/10-troubleshooting.md
+  s_c424fe16a2f66e::t_8abba13c72e127 68-73
+helm/docs/09-operations.md
+  s_c424fe16a2f66e::t_8abba13c72e127 14-16
+docker-compose/README.md
+  s_c424fe16a2f66e::t_8abba13c72e127 21-22,57-58
+docker-compose/docs/11-upgrades.md
+  s_c424fe16a2f66e::t_8abba13c72e127 5-7,15-16
+helm/docs/02-quickstart.md
+  s_c424fe16a2f66e::t_8abba13c72e127 45-47
+helm/docs/11-upgrades.md
+  s_c424fe16a2f66e::t_8abba13c72e127 5-8,17-18
+helm/values.yaml
+  s_c424fe16a2f66e::t_0cbea78ea0d471 141-144
+scripts/bump-image-tag.sh
+  s_c424fe16a2f66e::t_0cbea78ea0d471 19-20
+  s_c424fe16a2f66e::t_df87e546fdb374 94-97,104,106
+docker-compose/docker-compose.yml
+  s_c424fe16a2f66e::t_0cbea78ea0d471 61
+helm/templates/migrator-clickhouse-job.yaml
+  s_c424fe16a2f66e::t_0cbea78ea0d471 30-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.0",
+  "base_commit_sha": "b943d9de7f4012286c65200632994d304118ed42",
+  "prompts": {},
+  "sessions": {
+    "s_c424fe16a2f66e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f8751-34c7-7d52-91ee-a84027bd3bc2",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": null
+    }
+  }
+}
