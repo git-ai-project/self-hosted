@@ -1,0 +1,23 @@
+helm/Taskfile.yml
+  s_f6c222a9026e3a::t_9e1822046660df 106-110
+helm/scripts/create-org.mjs
+  s_f6c222a9026e3a::t_104178fa20843b 1-192
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.3.3",
+  "base_commit_sha": "d1ba28dbaa6ebf853e558f10c4f106ffa53fb376",
+  "prompts": {},
+  "sessions": {
+    "s_f6c222a9026e3a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "43e779cc-b529-48ed-b41f-5c17f4398543",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Sasha Varlamov",
+      "messages": [],
+      "messages_url": "https://usegitai.com/cas/88cb6446305ae1d3b91a7658eb1bec1d6e58e92ebce65324b5eef91e75521417"
+    }
+  }
+}

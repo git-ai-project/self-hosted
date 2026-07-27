@@ -1,0 +1,19 @@
+.github/workflows/ci.yml
+  s_add0da383d5b18::t_2cdd57ec3ed7bc 18,122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.5.3",
+  "base_commit_sha": "189e4b4b0ebc37698d308cf391a6a2b5e3e7a1fb",
+  "prompts": {},
+  "sessions": {
+    "s_add0da383d5b18": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8b72-0fb8-7bb0-9ab4-5480d5b2ee80",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Sasha Varlamov <sasha@sashavarlamov.com>"
+    }
+  }
+}

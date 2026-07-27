@@ -1,0 +1,25 @@
+docker-compose/scripts/create-org.mjs
+  s_976a4a671e785d::t_b5b3ad6e85a7b6 10
+.gitignore
+  s_976a4a671e785d::t_a57250fd6f46a3 1-2
+helm/scripts/create-org.mjs
+  s_976a4a671e785d::t_b5b3ad6e85a7b6 7
+pnpm-workspace.yaml
+  s_976a4a671e785d::t_60e75a9d339728 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.5.3",
+  "base_commit_sha": "96e4bbb7b2d161d246a932626455af0055e8d563",
+  "prompts": {},
+  "sessions": {
+    "s_976a4a671e785d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e9d91-dd25-7813-a62a-11cd36da37a1",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Sasha Varlamov <sasha@sashavarlamov.com>"
+    }
+  }
+}

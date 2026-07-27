@@ -1,0 +1,20 @@
+docker-compose/docs/07-admin-bootstrap.md
+  s_f6c222a9026e3a::t_7bd100d6e09e23 1,3-8,16-19,21-22,25-32,34-47,49-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.3.3",
+  "base_commit_sha": "2f27559d0a0a84938a74e14149cacff521fb3d6f",
+  "prompts": {},
+  "sessions": {
+    "s_f6c222a9026e3a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "43e779cc-b529-48ed-b41f-5c17f4398543",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Sasha Varlamov",
+      "messages": []
+    }
+  }
+}

@@ -1,0 +1,71 @@
+README.md
+  s_add0da383d5b18::t_ac34d14203dcbc 48,59,82
+helm/templates/_helpers.tpl
+  s_add0da383d5b18::t_e52e949ce0a5cd 60-63,185-194
+helm/templates/secret.yaml
+  s_add0da383d5b18::t_5b1ef5f0e355ab 23-25
+helm/scripts/test-render.sh
+  s_add0da383d5b18::t_b2c6796a17db0f 106-124
+  s_add0da383d5b18::t_91bf07451c665a 43-62,64-70,72-74,80,85-88,94-104
+  s_add0da383d5b18::t_5a82f3995d20ab 71,75-79,81-84
+  s_add0da383d5b18::t_3dcddaccfca49e 91
+  s_add0da383d5b18::t_9184bf458bbc63 92
+  s_add0da383d5b18::t_809b041c05fd10 63,89-90,93
+docker-compose/docs/00-overview.md
+  s_add0da383d5b18::t_4b35b27fdc5390 10
+docker-compose/docs/08-operations.md
+  s_add0da383d5b18::t_10ead54132a6a4 42-43
+  s_add0da383d5b18::t_bd8fce60b1ba3b 37-41,44-48
+docker-compose/docker-compose.yml
+  s_add0da383d5b18::t_86044258306e20 129
+  s_add0da383d5b18::t_2823d3bc41db08 137
+  s_add0da383d5b18::t_6c663946eae884 139
+  s_add0da383d5b18::t_b7afc0fdad99b0 131-132
+  s_add0da383d5b18::t_86ca7848ce0098 123,126-128,130,134-136
+  s_add0da383d5b18::t_0879a7cb0b9a40 122,124-125,133,138,140
+helm/docs/00-overview.md
+  s_add0da383d5b18::t_2545bf97cb8351 13
+docker-compose/README.md
+  s_add0da383d5b18::t_71b5d0de5f3d87 27-28,30
+  s_add0da383d5b18::t_b7afc0fdad99b0 29
+helm/templates/sql-deployment.yaml
+  s_add0da383d5b18::t_f6927dc4e81241 33-34
+  s_add0da383d5b18::t_697624733d2d7c 1-32,35-71
+docker-compose/docs/03-configuration.md
+  s_add0da383d5b18::t_b7afc0fdad99b0 62,66-67,71
+  s_add0da383d5b18::t_d952ce3a9579e8 58-61,64-65,69-70,72-78
+  s_add0da383d5b18::t_795d786a8ff5cb 63,68
+helm/values.yaml
+  s_add0da383d5b18::t_ad9789b1a5824c 169-174
+helm/README.md
+  s_add0da383d5b18::t_5352d0a61185f1 56
+  s_add0da383d5b18::t_82a75203a17687 54-55,57
+helm/docs/08-operations.md
+  s_add0da383d5b18::t_049e822dcec549 51-61
+docker-compose/.env.example
+  s_add0da383d5b18::t_b7afc0fdad99b0 51
+  s_add0da383d5b18::t_c92d11630df7c1 52-53
+helm/templates/sql-service.yaml
+  s_add0da383d5b18::t_6c663946eae884 10
+  s_add0da383d5b18::t_f39878a40b0240 13
+  s_add0da383d5b18::t_8d71678d3f6222 1-9,11-12,14-18
+helm/docs/03-configuration.md
+  s_add0da383d5b18::t_5352d0a61185f1 48
+  s_add0da383d5b18::t_8f677fce3729f3 36-47,49-51,139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.5.3",
+  "base_commit_sha": "d9701218bb1dd06932a81de13bc17ccb35b66c22",
+  "prompts": {},
+  "sessions": {
+    "s_add0da383d5b18": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8b72-0fb8-7bb0-9ab4-5480d5b2ee80",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Sasha Varlamov <sasha@sashavarlamov.com>"
+    }
+  }
+}
