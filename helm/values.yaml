@@ -15,6 +15,8 @@ secrets:
   workerJwtSecret: REPLACE_ME_WORKER_JWT_SECRET
   webInternalApiKey: REPLACE_ME_WEB_INTERNAL_API_KEY
   scmWebhookSecretKey: REPLACE_ME_SCM_WEBHOOK_SECRET_KEY
+  # Empty generates a signing key on install and preserves it across upgrades.
+  cubeApiSecret: ""
   licenseKey: REPLACE_ME_LICENSE_KEY
   # Deprecated: use email.resend.apiKey
   resendApiKey: ""

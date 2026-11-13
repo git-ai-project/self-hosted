@@ -34,16 +34,17 @@ jobs:
       - name: Validate Helm chart renders
         run: ./helm/scripts/test-render.sh
 
+      - name: Test Docker Compose secret provisioning
+        run: bash docker-compose/scripts/test-init-env.sh
+
       - name: Validate Docker Compose renders
         working-directory: docker-compose
         shell: bash
         run: |
           set -euo pipefail
 
-          cp .env.example .env
-          mkdir -p generated
-          : > generated/scm.env
-          trap 'rm -f .env generated/scm.env /tmp/compose-default.json /tmp/compose-sql.json; rmdir generated 2>/dev/null || true' EXIT
+          trap 'rm -f .env generated/scm.env /tmp/compose-default.json /tmp/compose-sql.json' EXIT
+          ./scripts/init-env.sh
 
           docker compose -f docker-compose.yml config --format json > /tmp/compose-default.json
 
@@ -53,6 +54,7 @@ jobs:
 
           python3 - <<'PY'
           import json
+          import re
           import sys
 
           def env_for(service):
@@ -84,6 +86,13 @@ jobs:
           sql_service = services.get("sql-api")
           if not sql_service:
               sys.exit("sql-api service must render with the sql-api profile")
+
+          cube_secret = env_for(default_services["web"]).get("CUBEJS_API_SECRET") or ""
+          if not re.fullmatch(r"[0-9a-f]{64}", cube_secret):
+              sys.exit("expected a generated Cube signing key")
+          for name in ("web", "worker", "sql-api"):
+              if env_for(services[name]).get("CUBEJS_API_SECRET") != cube_secret:
+                  sys.exit(f"{name} must receive the shared Cube signing key")
 
           env = env_for(sql_service)
           expected_env = {
@@ -160,6 +169,7 @@ jobs:
           WORKDIR /app
           RUN mkdir -p scripts bullmq-worker migrations/postgres migrations/clickhouse
           RUN printf '%s\n' \
+            'if (!/^[A-Za-z0-9]{64}$/.test(process.env.CUBEJS_API_SECRET || "")) process.exit(1);' \
             'const http = require("http");' \
             'const port = Number(process.env.PORT || 3000);' \
             'http.createServer((req, res) => {' \
@@ -284,3 +294,44 @@ jobs:
           rg -q 'name: SQL_API_USER' /tmp/sql-deployment.yaml
           rg -q 'name: SQL_API_PASSWORD' /tmp/sql-deployment.yaml
           rg -q 'name: sql' /tmp/sql-deployment.yaml
+
+      - name: Verify Cube signing key backfill and persistence
+        working-directory: helm
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          secret_name=ci-git-ai-self-hosting-secrets
+          read_cube_key() {
+            kubectl -n git-ai-ci get secret "$secret_name" -o jsonpath='{.data.CUBEJS_API_SECRET}'
+          }
+          upgrade() {
+            helm upgrade ci . \
+              --namespace git-ai-ci \
+              --values "$RUNNER_TEMP/ci-values.yaml" \
+              --wait \
+              --timeout 5m
+          }
+
+          initial_key="$(read_cube_key)"
+          test -n "$initial_key"
+          upgrade
+          test "$(read_cube_key)" = "$initial_key"
+
+          kubectl -n git-ai-ci patch secret "$secret_name" --type=json \
+            -p '[{"op":"remove","path":"/data/CUBEJS_API_SECRET"}]'
+          upgrade
+          backfilled_key="$(read_cube_key)"
+          test -n "$backfilled_key"
+          test "$backfilled_key" != "$initial_key"
+          upgrade
+          test "$(read_cube_key)" = "$backfilled_key"
+
+          for component in web worker sql; do
+            deployment="ci-git-ai-self-hosting-$component"
+            kubectl -n git-ai-ci rollout restart "deployment/$deployment"
+            kubectl -n git-ai-ci rollout status "deployment/$deployment" --timeout=2m
+            pod_key="$(kubectl -n git-ai-ci exec "deployment/$deployment" -- node -e \
+              'process.stdout.write(Buffer.from(process.env.CUBEJS_API_SECRET || "").toString("base64"))')"
+            test "$pod_key" = "$backfilled_key"
+          done

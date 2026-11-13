@@ -25,6 +25,7 @@ tasks:
   up:
     desc: Start the self-hosted stack (includes one-shot migrators)
     cmds:
+      - ./scripts/init-env.sh --cube-secret-only
       - docker compose up -d
 
   wait:
