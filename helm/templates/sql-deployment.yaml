@@ -43,6 +43,7 @@ spec:
                 secretKeyRef:
                   name: {{ include "gitai.secretName" . }}
                   key: SQL_API_PASSWORD
+            {{- include "gitai.cubeApiSecretEnv" . | nindent 12 }}
             - name: CLICKHOUSE_HTTP_URL
               value: {{ printf "http://%s:%v" (include "gitai.clickhouseServiceName" .) .Values.clickhouse.service.httpPort | quote }}
             - name: CLICKHOUSE_USER

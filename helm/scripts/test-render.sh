@@ -14,6 +14,10 @@ helm dependency update . >/dev/null
 helm lint . >/dev/null
 
 helm template local . > "$TMP_DIR/local.yaml"
+if ! rg -q '^  CUBEJS_API_SECRET: "[A-Za-z0-9]{64}"$' "$TMP_DIR/local.yaml"; then
+  echo "Expected a random Cube signing key in the chart-managed Secret" >&2
+  exit 1
+fi
 if ! rg -q "name: local-git-ai-self-hosting-storage" "$TMP_DIR/local.yaml"; then
   echo "Expected app storage PVC in local backend render" >&2
   exit 1
@@ -56,12 +60,18 @@ if rg -q "cleanup-ch-syslogs" "$TMP_DIR/local.yaml"; then
 fi
 
 cat > "$TMP_DIR/sql-api-values.yaml" <<'YAML'
+secrets:
+  cubeApiSecret: test-cube-signing-key-for-chart-rendering
 sqlApi:
   enabled: true
   username: analytics
   password: super-secret
 YAML
 helm template sql-api . -f "$TMP_DIR/sql-api-values.yaml" > "$TMP_DIR/sql-api.yaml"
+if ! rg -q '^  CUBEJS_API_SECRET: "test-cube-signing-key-for-chart-rendering"$' "$TMP_DIR/sql-api.yaml"; then
+  echo "Expected the configured Cube signing key in the chart-managed Secret" >&2
+  exit 1
+fi
 if ! rg -q "name: sql-api-git-ai-self-hosting-sql" "$TMP_DIR/sql-api.yaml"; then
   echo "Expected dedicated SQL API service when sqlApi.enabled=true" >&2
   exit 1
@@ -99,6 +109,42 @@ if rg -q '^\s*- name: sql$' "$TMP_DIR/sql-api-web-deployment.yaml"; then
   echo "Did not expect SQL port on web deployment when sqlApi.enabled=true" >&2
   exit 1
 fi
+
+assert_cube_secret_refs() {
+  local manifest="$1" secret_name="$2" optional="$3" component pattern
+  pattern="- name: CUBEJS_API_SECRET\n\s+valueFrom:\n\s+secretKeyRef:\n\s+name: $secret_name\n\s+key: CUBEJS_API_SECRET"
+  if [[ "$optional" == true ]]; then
+    pattern+="\n\s+optional: true"
+  else
+    pattern+="\n[^\n]*- name:"
+  fi
+  for component in web worker sql; do
+    if ! awk -v source="# Source: git-ai-self-hosting/templates/$component-deployment.yaml" \
+      '$0 == source { found = 1; next } /^---$/ { found = 0 } found' "$manifest" \
+      | rg -U -- "$pattern" >/dev/null; then
+      echo "Expected $component deployment to reference $secret_name/CUBEJS_API_SECRET" >&2
+      return 1
+    fi
+  done
+}
+
+assert_cube_secret_refs "$TMP_DIR/sql-api.yaml" sql-api-git-ai-self-hosting-secrets false
+helm template external . -f "$TMP_DIR/sql-api-values.yaml" \
+  --set secrets.existingSecret=external-secrets > "$TMP_DIR/external.yaml"
+assert_cube_secret_refs "$TMP_DIR/external.yaml" external-secrets true
+if rg -q '^  CUBEJS_API_SECRET:' "$TMP_DIR/external.yaml"; then
+  echo "Expected the external Secret to supply the Cube signing key" >&2
+  exit 1
+fi
+
+for invalid_key in 'too short' 'short value with                    spaces'; do
+  if helm template invalid-cube-key . --set-string "secrets.cubeApiSecret=$invalid_key" \
+    > "$TMP_DIR/invalid-cube-key.out" 2>&1 ||
+    ! rg -q 'secrets.cubeApiSecret must be a private value' "$TMP_DIR/invalid-cube-key.out"; then
+    echo "Expected invalid Cube signing key to fail chart validation" >&2
+    exit 1
+  fi
+done
 
 cat > "$TMP_DIR/invalid-sql-api-values.yaml" <<'YAML'
 sqlApi:

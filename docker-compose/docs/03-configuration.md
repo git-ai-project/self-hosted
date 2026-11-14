@@ -9,6 +9,7 @@
 - `WORKER_JWT_SECRET`: worker auth secret
 - `WEB_INTERNAL_API_KEY`: internal API auth key
 - `SCM_WEBHOOK_SECRET_KEY`: encryption key for stored webhook secrets
+- `CUBEJS_API_SECRET`: private Cube signing key with at least 32 non-whitespace characters. `task init` and `task up` generate and save one in `.env` if needed.
 - `DATABASE_URL`
 - `REDIS_URL`
 - `CLICKHOUSE_HTTP_URL`
@@ -65,7 +66,7 @@ The Postgres-compatible SQL API is disabled by default. To enable it:
 ```bash
 export SQL_API_USER=analytics
 export SQL_API_PASSWORD=replace-me
-docker compose --profile sql-api up -d
+COMPOSE_PROFILES=sql-api task up
 ```
 
 The SQL API listens on `SQL_API_PORT` (default `5432`) through the optional `sql-api` service and binds to `127.0.0.1` on the Docker host. It has self-hosted instance-admin data access. The profile service sets `SQL_API_ENABLED=true`; do not set it globally in `.env`. Do not put `SQL_API_USER` or `SQL_API_PASSWORD` in `.env`; that file is shared by the other Compose services. The SQL API service exits during startup if either value is empty.

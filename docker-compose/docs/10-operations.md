@@ -41,7 +41,7 @@ Start the dedicated SQL API service with:
 ```bash
 export SQL_API_USER=analytics
 export SQL_API_PASSWORD=replace-me
-docker compose --profile sql-api up -d
+COMPOSE_PROFILES=sql-api task up
 ```
 
 Tail logs with `task logs -- sql-api`.

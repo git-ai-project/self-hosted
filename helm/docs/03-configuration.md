@@ -152,6 +152,14 @@ Controls when the worker runs the nightly org sync job. Both values are optional
 - `worker.orgSync.cronPattern` (default `0 3 * * *`): cron expression for the sync schedule. Examples: `0 3 * * *` (daily at 3 AM), `0 */6 * * *` (every 6 hours).
 - `worker.orgSync.cronTz` (default `America/New_York`): IANA timezone for the cron schedule. Examples: `America/New_York`, `UTC`, `Europe/London`.
 
+## Cube Signing Key
+
+Helm generates a private `CUBEJS_API_SECRET` in the chart-managed Secret on install and preserves the value on upgrades. The web, worker, and optional SQL API deployments all read the same value.
+
+To supply a key for the chart-managed Secret, set `secrets.cubeApiSecret` to a private string of at least 32 non-whitespace characters. Generate a value with `openssl rand -hex 32` and pass it through your private values file. Use this setting or `secrets.existingSecret` when a GitOps tool renders the chart without cluster access, since offline renders cannot look up the persisted key.
+
+When rotating the key, restart the web, worker, and optional SQL API deployments so their containers load the updated value.
+
 ## Existing Secret Mode
 
 Set `secrets.existingSecret` to use a pre-created secret instead of chart-managed secret generation.
@@ -165,6 +173,7 @@ Expected keys include at least:
 - `WORKER_JWT_SECRET`
 - `WEB_INTERNAL_API_KEY`
 - `SCM_WEBHOOK_SECRET_KEY`
+- `CUBEJS_API_SECRET` for Enterprise images that require a private Cube signing key
 - `CLICKHOUSE_PASSWORD`
 - `LICENSE_KEY`
 - `SQL_API_PASSWORD` when `sqlApi.enabled=true`

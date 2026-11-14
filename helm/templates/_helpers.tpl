@@ -41,6 +41,24 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 {{- end -}}
 
+{{- define "gitai.isValidCubeApiSecret" -}}
+{{- /* Reject the former built-in value, identified by its SHA-256 digest. */ -}}
+{{- if and (kindIs "string" .) (ne (sha256sum .) "f794e07b81e67aa00be73bc516734857d1ba433d63df2d525eeacec92f9be68e") (regexMatch "^.{32,}$" (regexReplaceAll "[[:space:]\\p{Z}\\x{FEFF}]" . "")) -}}
+true
+{{- end -}}
+{{- end -}}
+
+{{- define "gitai.cubeApiSecretEnv" -}}
+- name: CUBEJS_API_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "gitai.secretName" . }}
+      key: CUBEJS_API_SECRET
+      {{- if .Values.secrets.existingSecret }}
+      optional: true
+      {{- end }}
+{{- end -}}
+
 {{- define "gitai.configMapName" -}}
 {{- printf "%s-config" (include "gitai.fullname" .) -}}
 {{- end -}}
